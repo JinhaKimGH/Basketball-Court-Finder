@@ -12,7 +12,7 @@ export default function Placecard(props){
         try {
             const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${props.value.center.lat}&lon=${props.value.center.lon}`, {
                 headers: {
-                  Referer: 'http://localhost:5173/Basketball-Court-Finder/', 
+                  Referer: 'https://jinhakimgh.github.io/Basketball-Court-Finder', 
                   'User-Agent': 'BasketballCourtFinder/1.0'
                 }
               });

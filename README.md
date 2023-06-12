@@ -4,7 +4,7 @@ This app finds basketball courts close to a given location. It also gives additi
 
 ## Website
 
-You can access this app [here](https://choosealicense.com/licenses/mit/)!
+You can access this app [here](https://jinhakimgh.github.io/Basketball-Court-Finder)!
 
 ## License
 

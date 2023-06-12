@@ -76,7 +76,7 @@ export default function Search(props){
         try {
             const response = await axios.get(`https://nominatim.openstreetmap.org/search?q=${location}&format=json`, {
                 headers: {
-                    Referer: 'http://localhost:5173/Basketball-Court-Finder/', // Set the Referer header
+                    Referer: 'https://jinhakimgh.github.io/Basketball-Court-Finder', // Set the Referer header
                     'User-Agent': 'BasketballCourtFinder/1.0' // Set the User-Agent header
                 }
             });
