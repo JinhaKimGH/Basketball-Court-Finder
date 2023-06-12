@@ -51,10 +51,10 @@ export default function Placecard(props){
             </div>
 
             {windowType === "Overview" && <div className="overview-panel">
-                <p className="distance"><img src="../../assets/distanceIcon.png" className="icons"></img>{` Distance: ${Math.round(props.distance * 100) / 100} km`}</p>
+                <p className="distance"><img src="../../public/assets/distanceIcon.png" className="icons"></img>{` Distance: ${Math.round(props.distance * 100) / 100} km`}</p>
                 <p className="address"><i className="fa fa-map-marker"></i>{address !== "" && " " + address}</p>
-                {'hoops' in props.value.tags && <p className="info"><img src="../../assets/hoop.png" className="icons"></img>{" " + props.value.tags.hoops} hoop{props.value.tags.hoops > 1 ? "s" : ""}</p>}
-                {'surface' in props.value.tags && <p className="info"><img src="../../assets/ground.png" className="icons"></img>{" " + props.value.tags.surface.charAt(0).toUpperCase() + props.value.tags.surface.slice(1)} Surface</p>}
+                {'hoops' in props.value.tags && <p className="info"><img src="../../public/assets/hoop.png" className="icons"></img>{" " + props.value.tags.hoops} hoop{props.value.tags.hoops > 1 ? "s" : ""}</p>}
+                {'surface' in props.value.tags && <p className="info"><img src="../../public/assets/ground.png" className="icons"></img>{" " + props.value.tags.surface.charAt(0).toUpperCase() + props.value.tags.surface.slice(1)} Surface</p>}
             </div>}
 
             {windowType == "Review" && <Reviews className="review" username={props.username} reviewData={props.reviewData} placeId={props.value.id} handleReviewData={props.handleReviewData}/>}

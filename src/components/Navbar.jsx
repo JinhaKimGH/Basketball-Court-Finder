@@ -14,7 +14,7 @@ export default function Navbar(props){
     return(
         <nav className="navbar">
             <img 
-                src="./assets/basket.png" 
+                src="./public/assets/basket.png" 
                 className="navbar-image"
             />
             <h2 className="navbar-title">Basketball Court Finder</h2>
