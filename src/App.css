@@ -332,13 +332,13 @@ li a:hover{
   display: inline-block;
   width: 1.5em;
   height: 1.5em;
-  background-image: url(./assets/star-empty.png);
+  background-image: url(../assets/star-empty.png);
   background-size: cover;
   cursor: pointer;
 }
 
 .filled{
-  background-image: url(./assets/star-filled.png);
+  background-image: url(../assets/star-filled.png);
 }
 
 .rating-error{
