@@ -4,14 +4,14 @@ import 'leaflet/dist/leaflet.css';
 
 // The red (active) marker icon on the map
 const redMarker = L.icon({
-    iconUrl: '../../public/assets/red-map-marker.png',
+    iconUrl: './assets/red-map-marker.png',
     iconSize: [30, 30],
     iconAnchor: [12, 41],
 })
 
 // The blue (inactive) marker icon on the map
 const blueMarker = L.icon({
-    iconUrl: '../../public/assets/blue-map-marker.png',
+    iconUrl: './assets/blue-map-marker.png',
     iconSize: [30, 30],
     iconAnchor: [12, 41],
 })
