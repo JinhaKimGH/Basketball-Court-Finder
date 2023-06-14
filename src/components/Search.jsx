@@ -69,6 +69,13 @@ export default function Search(props){
             setRange(value);
         }
     }
+
+    // Searches if enter is pressed
+    function handleKeyDown(event){
+        if(event.key == 'Enter'){
+            calculateBoundary();
+        }
+    }
     
     // Calculates the latitude/longitude on submit (geocode with nominatim)
     async function calculateBoundary(){
@@ -119,7 +126,7 @@ export default function Search(props){
     return(
         <div>
             <div className="form">
-                <input type="text" placeholder='Toronto' onChange={handleChange} className="form-input"></input>
+                <input type="text" placeholder='Toronto' onChange={handleChange} onKeyDown={handleKeyDown} className="form-input"></input>
                 <select id="range" name="range" className="form-select" onChange={handleChange}>
                     <option value="1000">1 km</option>
                     <option value="5000">5 km</option>
