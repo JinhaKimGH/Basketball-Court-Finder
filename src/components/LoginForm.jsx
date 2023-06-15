@@ -59,10 +59,8 @@ export default function LoginForm(props){
                 <button onClick={closeForm} className="close-button">&times;</button>
                 <form className="form-login" onSubmit={handleLogin}>
                     <h1 className="login-title">Sign In</h1>
-                    <label>Email</label><br></br>
-                    <input id="email" type="email" name="email" value={email} onChange={(event) => setEmail(event.target.value)} className="input-box" required/><br></br>
-                    <label>Password</label><br></br>
-                    <input id="password" type="password" name="password" value={password} onChange={(event) => setPassword(event.target.value)} className="input-box" required/><br></br>
+                    <input placeholder="Email" id="email" type="email" name="email" value={email} onChange={(event) => setEmail(event.target.value)} className="input-box" required/><br></br>
+                    <input placeholder="Password" id="password" type="password" name="password" value={password} onChange={(event) => setPassword(event.target.value)} className="input-box" required/><br></br>
                     <input type="submit" value="Login" className="submit-button"/><br></br>
                 </form>
             </div>

@@ -2,7 +2,7 @@
 
 * {
   box-sizing: border-box;
-  font-family: "Inter", sans-serif;
+  font-family: "Inter", open-serif;
   margin: 0;
 }
 
@@ -95,6 +95,7 @@ li a:hover{
   background: #FFFFFF;
   float: right;
   border: none;
+  margin-right: 1em;
 }
 
 .form-select:focus{
@@ -244,13 +245,17 @@ li a:hover{
   max-height: 2rem;
 }
 
+.contact-icon:active{
+  transform: translateY(2px);
+}
+
 .contact{
   display: flex;
   justify-content: space-around;
 }
 
 .login-signup-form{
-  font-family: "Karla", sans-serif;
+  font-family: "Inter", sans-serif;
   position: fixed;
   top: 0;
   left: 0;
@@ -291,18 +296,26 @@ li a:hover{
   color:#FF8B36;
 }
 
+.close-button:active{
+  transform: translateY(2px);
+}
+
 .login-title{
   text-align: center;
   padding: 0.5em;
   font-weight: 500;
+  font-size: 2em;
 }
 
 .input-box{
   margin-bottom: 1.5em;
+  padding: 0.5em;
+  width: 60%;
+  font-size: 1em;
 }
 
 .submit-button{
-  border-radius: 5px;
+  border-radius: 20px;
   background-color: white;
   color: black;
   border: 2px solid #FF8B36;
@@ -310,12 +323,18 @@ li a:hover{
   font-size: 1rem;
   transition-duration: 0.6s;
   margin-bottom: 1.5em;
+  width: 60%;
+  padding: 0.5em;
 }
 
 .submit-button:hover{
   border: 2px solid #FF8B36;
   background: #FF8B36;
   color: white;
+}
+
+.submit-button:active{
+  transform: translateY(2px);
 }
 
 .profile-picture {
@@ -344,6 +363,10 @@ li a:hover{
   background-image: url(../assets/star-empty.png);
   background-size: cover;
   cursor: pointer;
+}
+
+.star:active{
+  transform: translateY(2px);
 }
 
 .filled{

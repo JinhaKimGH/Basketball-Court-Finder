@@ -67,12 +67,9 @@ export default function SignUpForm(props){
                 <button onClick={closeForm} className="close-button">&times;</button>
                 <form className="form-login">
                     <h1 className="login-title">Sign Up</h1>
-                    <label>Email</label><br></br>
-                    <input id="email-input" type="email" name="email" value={email} onChange={(event) => setEmail(event.target.value)} className="input-box" required/><br></br>
-                    <label>Password</label><br></br>
-                    <input id="password" type="password" name="password" value={password} onChange={(event) => setPassword(event.target.value)} className="input-box" required/><br></br>
-                    <label>Retype Password</label><br></br>
-                    <input id="confirm-password" type="password" name="password" value={retypePassword} onChange={(event) => setRetypePassword(event.target.value)}className="input-box" required/><br></br>
+                    <input placeholder="Email" id="email-input" type="email" name="email" value={email} onChange={(event) => setEmail(event.target.value)} className="input-box" required/><br></br>
+                    <input placeholder="Password" id="password" type="password" name="password" value={password} onChange={(event) => setPassword(event.target.value)} className="input-box" required/><br></br>
+                    <input placeholder="Resubmit Password" id="confirm-password" type="password" name="password" value={retypePassword} onChange={(event) => setRetypePassword(event.target.value)}className="input-box" required/><br></br>
                     <input type="submit" value="Sign Up" className="submit-button"/><br></br>
                 </form>
             </div>
