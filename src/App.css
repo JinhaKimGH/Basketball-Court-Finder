@@ -67,21 +67,23 @@ li a:hover{
 }
 
 .form {
-  width: 100%;
   position: relative;
+  padding: 0 1rem;
   display: flex;
-  margin-top: 2rem;
-  justify-content: center;
+  margin: 2rem auto;
+  width: 50%;
+  background: #FFFFFF;
+  border-radius: 5px;
+  padding-right: 0;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
 
 .form-input{
   padding: 10px;
   font-size: 1.5rem;
-  border: 1px solid grey;
+  width: 90%;
   float: left;
-  width: 50%;
-  background: #FFFFFF;
-  border-right-style: none;
+  border: none;
 }
 
 .form-input:focus{
@@ -89,10 +91,10 @@ li a:hover{
 }
 
 .form-select{
-  border: 1px solid grey;
+  margin-left: auto;
   background: #FFFFFF;
-  border-right-style: none;
-  border-left-style: none;
+  float: right;
+  border: none;
 }
 
 .form-select:focus{
@@ -101,17 +103,24 @@ li a:hover{
 
 .submit{
   float: left;
-  background: #FFFFFF;
-  padding: 10px 10px;
-  color: black;
+  background: #FF8B36;
+  color: #FFFFFF;
   font-size: 1.5rem;
-  border: 1px solid grey;
+  border: none;
   border-left: none; 
   cursor: pointer;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  padding: 0.75rem 1rem;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
 
 .submit:hover{
-  color: #FF8B36;
+  background: #e77c30;
+}
+
+.submit:active {
+  transform: translateY(2px);
 }
 
 .view-court{

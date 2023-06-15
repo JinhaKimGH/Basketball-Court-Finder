@@ -126,7 +126,7 @@ export default function Search(props){
     return(
         <div>
             <div className="form">
-                <input type="text" placeholder='Toronto' onChange={handleChange} onKeyDown={handleKeyDown} className="form-input"></input>
+                <input type="text" placeholder={location} onChange={handleChange} onKeyDown={handleKeyDown} className="form-input"></input>
                 <select id="range" name="range" className="form-select" onChange={handleChange}>
                     <option value="1000">1 km</option>
                     <option value="5000">5 km</option>
