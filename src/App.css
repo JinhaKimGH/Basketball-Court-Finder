@@ -14,10 +14,10 @@ body {
 .navbar{
   display: flex;
   align-items: center;
-  height: 5.5rem;
+  height: 10vmin;
   background: white;
   color: black;
-  padding: 1.25rem;
+  padding: 1.25vmin;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
   position: sticky; 
   top: 0;
@@ -25,28 +25,29 @@ body {
 }
 
 .navbar-title{
-  font-size: 1.75rem;
+  font-size: 2vw;
   margin-right: auto;
   font-weight: 500;
 }
 
 .navbar-image {
   height: 100%;
-  margin-right: 1rem;
-  margin-left: 10rem;
+  margin-right: 1vw;
+  margin-left: 2vw;
 }
 
 ul{
   list-style-type: none;
-  margin-right: 10rem; 
+  margin-right: 2vw; 
   padding: 0;
   overflow: hidden;
   display: flex;
   align-items: center;
+  font-size: 1vmax;
 }
 
 li{
-  padding: 0px 1.25rem;;
+  padding: 0px 1.25vw;;
 }
 
 li a{
@@ -68,9 +69,9 @@ li a:hover{
 
 .form {
   position: relative;
-  padding: 0 1rem;
+  padding: 0 1vw;
   display: flex;
-  margin: 2rem auto;
+  margin: 2vh auto;
   width: 50%;
   background: #FFFFFF;
   border-radius: 5px;
@@ -79,8 +80,7 @@ li a:hover{
 }
 
 .form-input{
-  padding: 10px;
-  font-size: 1.5rem;
+  font-size: 1.25vmax;
   width: 90%;
   float: left;
   border: none;
@@ -91,11 +91,12 @@ li a:hover{
 }
 
 .form-select{
+  font-size: 1.25vmax;
   margin-left: auto;
   background: #FFFFFF;
   float: right;
   border: none;
-  margin-right: 1em;
+  margin-right: 1vw;
 }
 
 .form-select:focus{
@@ -106,13 +107,13 @@ li a:hover{
   float: left;
   background: #FF8B36;
   color: #FFFFFF;
-  font-size: 1.5rem;
+  font-size: 1.5vw;
   border: none;
   border-left: none; 
   cursor: pointer;
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
-  padding: 0.75rem 1rem;
+  padding: 0.75vmax 1vmax;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
 
@@ -128,7 +129,7 @@ li a:hover{
   display: flex;
   text-align: center;
   justify-content: center;
-  margin-top: 1.5rem;
+  margin-top: 2vh;
 }
 
 .arrows{
@@ -142,8 +143,8 @@ li a:hover{
   border-width: 0 3px 3px 0;
   display: inline-block;
   padding: 3px;
-  width: 20px;
-  height: 20px;
+  width: 2vh;
+  height: 2vh;
 }
 
 .right {
@@ -159,7 +160,7 @@ li a:hover{
 .placecard{
   border-radius: 5px;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
-  padding: 1rem;
+  padding: 2vmax;
   margin: 10px;
 }
 
@@ -168,12 +169,12 @@ li a:hover{
 }
 
 .name{
-  font-size: 1.5rem;
+  font-size: 2vh;
   font-weight:500;
 }
 
 .address{
-  font-size: 1rem;
+  font-size: 1.5vh;
   font-weight: 400;
 }
 
@@ -182,18 +183,18 @@ li a:hover{
 }
 
 .distance{
-  font-size: 1rem;
+  font-size: 1.5vh;
 }
 
 .surface-icon{
   color: #FF8B36;
-  max-height: 1rem;
+  max-height: 2vh;
 }
 
 .map{
   height:400px;
   width: 100%;
-  margin-top: 1.5rem;
+  margin-top: 2vmax;
   z-index: 0;
 }
 
@@ -211,7 +212,8 @@ li a:hover{
 }
 
 .Overview, .Review{
-  padding: 1rem;
+  padding: 1vh;
+  font-size:1.75vh;
 }
 
 .overview-panel{
@@ -219,30 +221,32 @@ li a:hover{
 }
 
 .icons{
-  max-height: 1rem;
+  max-height: 1.5vh;
 }
 
 .error{
   text-align: center;
-  margin-top: 2rem;
-  font-size: 1rem;
+  margin-top: 2vh;
+  font-size: 1vw;
 }
 
 .footer, .about{
   text-align: center;
-  margin: 3rem;
+  margin: 3vh;
 }
 
 .about > p{
-  margin: 1em;
+  margin: 1vh;
+  font-size: 1.5vh;
 }
 
 .about > h1{
   font-weight: 500;
+  font-size: 3vh;
 }
 
 .contact-icon{
-  max-height: 2rem;
+  max-height: 5vh;
 }
 
 .contact-icon:active{
