@@ -8,10 +8,12 @@ export default function Reviews(props){
     const [userRating, setUserRating] = React.useState(0); // The rating that the user enters
     const [userReRating, setUserReRating] = React.useState(0); // If the user decides to re-rate 
     const [doesExist, setDoesExist] = React.useState(false); // Checks if the review document actually exists in firebase
+    const [loading, setLoading] = React.useState(false) // Shows a loading sign while the API search is running
 
     // Obtains the review ratings for this specific place ID from firestore
     async function getReviews(){
         try{
+            setLoading(true);
             const db = getFirestore(firebase);
             const reviewsRef = doc(collection(db, 'reviews'), props.placeId.toString())
 
@@ -23,6 +25,7 @@ export default function Reviews(props){
                     setDoesExist(true);
                 }
             }
+            setLoading(false);
         }
         catch (error){
             console.error("Error retrieving review: ", error)
@@ -187,8 +190,9 @@ export default function Reviews(props){
 
     return(
         <div>
-            <div className="average">{doesExist ? <div>{`${rating} (${numPeople})`}</div> : <p>No reviews exist yet</p> }</div>
-            <Stars rating={rating} handleRating={setUserRating} reviewData={props.reviewData} username={props.username} placeId={props.placeId} handleReRating={setUserReRating}/>
+            {loading == false ? <div className="average">{doesExist ? <div>{`${rating} (${numPeople})`}</div> : <p>No reviews exist yet</p> }</div> : ""}
+            {loading == false ? <Stars rating={rating} handleRating={setUserRating} reviewData={props.reviewData} username={props.username} placeId={props.placeId} handleReRating={setUserReRating}/> : ""}
+            {loading &&  <img src="./assets/loading.gif" className="loading"></img>}
         </div>
     )
 }

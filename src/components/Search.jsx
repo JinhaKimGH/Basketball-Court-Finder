@@ -41,12 +41,7 @@ export default function Search(props){
             });
 
             // Sorts the basketball courts by distance
-            setBasketballCourts(response.data.elements.sort((court1, court2) => {
-                const distance1 = calcDistance(latitude, longitude, court1.center.lat, court1.center.lon);
-                const distance2 = calcDistance(latitude, longitude, court2.center.lat, court2.center.lon);
-
-                return distance1 - distance2
-            }));
+            setBasketballCourts(sortCourts(response, latitude, longitude));
             
           } catch (error) {
             console.error('Error fetching Basketball Courts:', error);
@@ -55,6 +50,16 @@ export default function Search(props){
     
         fetchPOIs();
     }, [coordinates, range]);
+
+    // Sorts basketball courts by distance
+    function sortCourts(response, latitude, longitude){
+        return response.data.elements.sort((court1, court2) => {
+            const distance1 = calcDistance(latitude, longitude, court1.center.lat, court1.center.lon);
+            const distance2 = calcDistance(latitude, longitude, court2.center.lat, court2.center.lon);
+
+            return distance1 - distance2
+        })
+    }
     
     // Updates the states for inputs
     function handleChange(event){

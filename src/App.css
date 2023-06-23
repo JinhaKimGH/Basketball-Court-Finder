@@ -162,6 +162,7 @@ li a:hover{
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
   padding: 2vmax;
   margin: 10px;
+  min-width: 40vw;
 }
 
 .overview-panel > p{
@@ -169,12 +170,12 @@ li a:hover{
 }
 
 .name{
-  font-size: 2vh;
+  font-size: 3vh;
   font-weight:500;
 }
 
 .address{
-  font-size: 1.5vh;
+  font-size: 2vh;
   font-weight: 400;
 }
 
@@ -183,7 +184,11 @@ li a:hover{
 }
 
 .distance{
-  font-size: 1.5vh;
+  font-size: 2vh;
+}
+
+.info{
+  font-size: 2vh;
 }
 
 .surface-icon{
@@ -381,4 +386,9 @@ li a:hover{
   color: red;
   font-size: 0.5em;
   text-align: center;
+}
+
+.loading{
+  width: 5vw;
+  height: auto;
 }
