@@ -1,4 +1,9 @@
-export default function About(){
+/**
+ * About Component
+ * 
+ * @returns {JSX.Element}
+ */
+export default function About() : JSX.Element{
     return(
     <div id="about" className="about">
         <p>About Me</p>

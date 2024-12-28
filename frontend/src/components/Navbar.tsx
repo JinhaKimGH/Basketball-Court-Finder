@@ -1,15 +1,27 @@
-export default function Navbar(props){
+/**
+ * Navbar Component
+ * 
+ * @param {Object} props  – Component props.
+ * @param {React.Dispatch<React.SetStateAction<string>>} props.handleClick – Sets signin form state
+ * @param {string} props.username – Users username
+ * @returns {JSX.Element}
+ */
+export default function Navbar(
+    props: {
+        handleClick: React.Dispatch<React.SetStateAction<string>>,
+        username: string
+    }) : JSX.Element {
     // Scrolls into the section when it is clicked on in the navbar
-    function handleClickScroll(event){
-        const element = document.getElementById(event.target.innerText.toLowerCase())
+    function handleClickScroll(event : React.MouseEvent<HTMLAnchorElement>){
+        const element = document.getElementById((event.target as HTMLAnchorElement).innerText.toLowerCase())
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
         }
     }
 
     // Handles the login feature – sets the pop-up state to determine whether the user is signing up or logging in
-    function login(event){
-        props.handleClick(event.target.innerText)
+    function login(event : React.MouseEvent<HTMLAnchorElement>){
+        props.handleClick((event.target as HTMLAnchorElement).innerText)
     }
     return(
         <nav className="navbar">

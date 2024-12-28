@@ -1,8 +1,25 @@
 /* eslint-disable react/prop-types */
 import React from "react";
 import Reviews from "./Reviews";
+import { BasketballCourt } from "../interfaces";
 
-export default function Placecard(props){
+/**
+ * Search Component
+ * 
+ * @param {Object} props  – Component props.
+ * @param {number} props.key – index
+ * @param {BasketballCourt} props.value – Basketball court
+ * @param {number} props.distance – Distance from original coordinates
+ * @param {string} props.username
+ * @returns {JSX.Element}
+ */
+export default function Placecard(
+    props : {
+        key : number,
+        value: BasketballCourt,
+        distance: number,
+        username: string
+    }) : JSX.Element {
     const [address, setAddress] = React.useState("") // Address state 
     const [amenity, setAmenity] = React.useState("") // Amenity state, in the case of a park/community centre
     const [windowType, setWindowType] = React.useState("Overview") // Sets the window state (Overview or Review)
@@ -13,7 +30,7 @@ export default function Placecard(props){
         try {
 
             setLoading(true);
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${props.value.center.lat}&lon=${props.value.center.lon}`, {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${props.value.lat}&lon=${props.value.lon}`, {
                 headers: {
                   Referer: 'https://jinhakimgh.github.io/Basketball-Court-Finder', 
                   'User-Agent': 'BasketballCourtFinder/1.0'
@@ -40,30 +57,30 @@ export default function Placecard(props){
     }, [])
 
     // Changes window from Overview to Review
-    function changeWindow(event){
-        setWindowType(event.target.className)
+    function changeWindow(event : React.MouseEvent<HTMLParagraphElement, MouseEvent>){
+        setWindowType((event.target as HTMLParagraphElement).className)
     }
 
     const activeStyle = {"borderBottom": "2px solid #FF8B36", "color": "#FF8B36"} // Sets the style of the active window
     return(
         <div className="placecard">
-            {amenity !== "" ? <p className="name">{amenity}</p> : ('name' in props.value.tags ? <p className="name">{props.value.tags.name}</p> :  <p className="name">Outdoor Court</p>)}
+            {amenity !== "" ? <p className="name">{amenity}</p> : ('name' in props.value ? <p className="name">{props.value.name}</p> :  <p className="name">Outdoor Court</p>)}
             
             <div className="choose-window">
                 <p className="Overview" onClick={changeWindow} style={windowType === "Overview" ? activeStyle : {}}>Overview</p>
                 <p className="Review" onClick={changeWindow} style={windowType === "Review" ? activeStyle : {}}>Reviews</p>
             </div>
 
-            {windowType === "Overview" & loading === false ? <div className="overview-panel">
+            {windowType === "Overview" && loading === false ? <div className="overview-panel">
                 <p className="distance"><img src="./assets/distanceIcon.png" className="icons"></img>{` Distance: ${Math.round(props.distance * 100) / 100} km`}</p>
                 <p className="address"><i className="fa fa-map-marker"></i>{address !== "" && " " + address}</p>
-                {'hoops' in props.value.tags && <p className="info"><img src="./assets/hoop.png" className="icons"></img>{" " + props.value.tags.hoops} hoop{props.value.tags.hoops > 1 ? "s" : ""}</p>}
-                {'surface' in props.value.tags && <p className="info"><img src="./assets/ground.png" className="icons"></img>{" " + props.value.tags.surface.charAt(0).toUpperCase() + props.value.tags.surface.slice(1)} Surface</p>}
+                {props.value.hoops && <p className="info"><img src="./assets/hoop.png" className="icons"></img>{" " + props.value.hoops} hoop{props.value.hoops > 1 ? "s" : ""}</p>}
+                {props.value.surface && <p className="info"><img src="./assets/ground.png" className="icons"></img>{" " + props.value.surface.charAt(0).toUpperCase() + props.value.surface.slice(1)} Surface</p>}
             </div> : ""}
 
             {loading == true ? <img src="./assets/loading.gif" className="loading"></img> : ""}
 
-            {windowType == "Review" && <Reviews className="review" username={props.username} reviewData={props.reviewData} placeId={props.value.id} handleReviewData={props.handleReviewData}/>}
+            {windowType == "Review" && <Reviews className="review" username={props.username} placeId={props.value.id}/>}
 
         </div>
     )
