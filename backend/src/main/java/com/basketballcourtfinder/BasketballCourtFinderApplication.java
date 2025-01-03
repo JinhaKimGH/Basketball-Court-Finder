@@ -1,8 +1,12 @@
-package com.basketballcourtfinder.service;
+package com.basketballcourtfinder;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
+@EnableJpaRepositories("com.basketballcourtfinder.repository")
+@EntityScan("com.basketballcourtfinder.entity")
 @SpringBootApplication
 public class BasketballCourtFinderApplication {
 

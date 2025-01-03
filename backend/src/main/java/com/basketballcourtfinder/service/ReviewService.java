@@ -15,10 +15,10 @@ public class ReviewService {
     }
 
     public List<Review> findCourtReviews(Long court_id) {
-        return repository.findByCourtId(court_id);
+        return repository.findByCourt_Id(court_id);
     }
 
     public Review findUserCourtReview(Long court_id, Long user_id) {
-        return repository.findByCourtIdUserId(court_id, user_id).orElse(null);
+        return repository.findByCourt_idAndUser_id(court_id, user_id).orElse(null);
     }
 }
