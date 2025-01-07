@@ -1,16 +1,22 @@
 package com.basketballcourtfinder.entity;
 
-import jakarta.persistence.*;
+import com.basketballcourtfinder.jsonmapping.OverpassResponse;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import java.util.Map;
+import java.util.Objects;
 
 @Entity
 @Data
 @AllArgsConstructor
 public class BasketballCourt {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false)
     private long id;
 
     @Column(nullable = false)
@@ -29,30 +35,32 @@ public class BasketballCourt {
     @Embedded
     private Address address;
 
-    private String description;
+    private String amenity;
 
-    private String features;
+    private String website;
 
-    @ManyToOne
-    @JoinColumn(name="added_by")
-    private User user;
+    private String leisure;
 
-}
+    private String opening_hours;
 
-@Embeddable
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-class Address {
-
-    private String street_address;
-    private String city;
-    private String state;
-    private String country;
-    private String postal_code;
-
-    @Override
-    public String toString() {
-        return street_address + ", " + city + ", " + state + ", " + country + ", " + postal_code;
+    private String phone;
+    public BasketballCourt(OverpassResponse.Element element) {
+        this.id = element.getId();
+        if (element.getCenter() != null) {
+            this.lat = element.getCenter().getLat();
+            this.lon = element.getCenter().getLon();
+        }
+        this.name = element.getTag("name");
+        this.hoops = Objects.equals(element.getTag("hoops"), "") ? 0 : Integer.parseInt(element.getTag("hoops"));
+        this.surface = element.getTag("surface");
+        this.address = new Address(element);
+        this.amenity = element.getTag("amenity");
+        this.website = element.getTag("website");
+        this.leisure = element.getTag("leisure");
+        this.opening_hours = element.getTag("opening_hours");
+        this.phone = element.getTag("phone");
     }
+
+    public void setAddress(Map<String, String> map ) { this.address = new Address(map); }
 }
+

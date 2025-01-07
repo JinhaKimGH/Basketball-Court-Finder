@@ -54,12 +54,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                // Get the user email/username from the claims
-                String username = claims.getSubject();
+                // Extract user ID from claims
+                Long userId = claims.get("userID", Long.class);
+                String username = claims.getSubject(); // The email/username
 
-                // Create Authentication token
+                // Create Authentication token with user ID as principal
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        username, null, Collections.emptyList());
+                        userId, null, Collections.emptyList());
 
                 // Set the authentication in the security context
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
