@@ -34,7 +34,20 @@ public class UserController {
     public ResponseEntity<?> get() {
         // User ID Found from Token
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = (Long) authentication.getPrincipal(); // user ID is set as principal
+
+        // Check if not set in token
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Unauthorized: User ID not found");
+        }
+
+        Long userId;
+        try {
+            // retrieves userID from token
+            userId = (Long) authentication.getPrincipal();
+        } catch (ClassCastException e) {
+            // User ID is not set right in the token generation
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Unauthorized: Invalid User ID format");
+        }
 
         try {
             // Finds user from service, only returns non-sensitive parameters
@@ -101,15 +114,22 @@ public class UserController {
 
         // Updates attribute based on the parameter passed in
         try {
-            if (userDTO.getEmail() != null) {
-                service.updateEmail(userId, userDTO.getEmail());
+            if (userDTO.getEmail() != null | userDTO.getDisplayName() != null | userDTO.getPassword() != null) {
+                if (userDTO.getEmail() != null) {
+                    service.updateEmail(userId, userDTO.getEmail());
+                }
+                if (userDTO.getPassword() != null) {
+                    service.updatePassword(userId, userDTO.getPassword());
+                }
+                if (userDTO.getDisplayName() != null) {
+                    service.updateDisplayName(userId, userDTO.getDisplayName());
+                }
             }
-            if (userDTO.getPassword() != null) {
-                service.updatePassword(userId, userDTO.getPassword());
+
+            else {
+                return ResponseEntity.badRequest().body("At least one field must not be null.");
             }
-            if (userDTO.getDisplayName() != null) {
-                service.updateDisplayName(userId, userDTO.getDisplayName());
-            }
+
             return ResponseEntity.ok("User updated successfully");
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND).body("User not found");

@@ -61,6 +61,12 @@ public class BasketballCourt {
         this.phone = element.getTag("phone");
     }
 
+
+    public BasketballCourt(long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
     public void setAddress(Map<String, String> map ) { this.address = new Address(map); }
 }
 
