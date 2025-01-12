@@ -3,14 +3,9 @@ package com.basketballcourtfinder.service;
 import com.basketballcourtfinder.entity.BasketballCourt;
 import com.basketballcourtfinder.jsonmapping.OverpassResponse;
 import com.basketballcourtfinder.repository.BasketballCourtRepository;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,11 +14,14 @@ import java.util.stream.Collectors;
 public class BasketballCourtService {
     private final BasketballCourtRepository repository;
 
+    private final RestTemplate restTemplate;
+
     // Cache for addresses to reduce API calls
     private final Map<String, Map<String, String>> addressCache = new HashMap<>();
 
-    public BasketballCourtService(BasketballCourtRepository repository) {
+    public BasketballCourtService(BasketballCourtRepository repository, RestTemplateBuilder restTemplateBuilder) {
         this.repository = repository;
+        this.restTemplate = restTemplateBuilder.build();
     }
 
     /*
@@ -34,37 +32,20 @@ public class BasketballCourtService {
 
         // If the court doesn't exist in our database, we must call the API
         if (court == null) {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("referer", "https://jinhakimgh.github.io/Basketball-Court-Finder");
-            headers.set("User-Agent", "Basketball Court Finder");
+            String query = String.format("[out:json];way(%s);out tags;", court_id);
 
-            HttpEntity<?> entity = new HttpEntity<>(headers);
+            // Using RestClient to make the API call
+            String apiUrl = String.format("https://overpass-api.de/api/interpreter?data=%s", query);
 
-            UriComponents uriComponents = UriComponentsBuilder.newInstance()
-                    .scheme("https")
-                    .host("overpass-api.de")
-                    .path("/api/interpreter")
-                    .queryParam("data", String.format("[out:json];way(%s);out tags;", court_id))
-                    .build()
-                    .encode();
+            OverpassResponse response = restTemplate.getForObject(apiUrl, OverpassResponse.class);
 
-            RestTemplate restTemplate = new RestTemplate();
+            if (!response.getElements().isEmpty()) {
+                court = new BasketballCourt(response.getElements().get(0));
 
-            ResponseEntity<OverpassResponse> response = restTemplate.exchange(
-                    uriComponents.toUri(),
-                    HttpMethod.GET,
-                    entity,
-                    OverpassResponse.class
-            );
-
-            // Retrieve the court from API response, should be first element in list
-            court = new BasketballCourt(response.getBody().getElements().get(0));
-
-            // Obtain address details from API if incomplete
-            if (court.getAddress().isIncomplete()) {
-                court.setAddress(getAddressDetails(court.getLat(), court.getLon()));
+                if (court.getAddress().isIncomplete()) {
+                    court.setAddress(getAddressDetails(court.getLat(), court.getLon()));
+                }
             }
-
         }
 
         return court;
@@ -73,65 +54,40 @@ public class BasketballCourtService {
     /*
     * Retrieves address details from the nominatim API
     * */
-    private Map<String, String> getAddressDetails(double lat, double lon) {
+    Map<String, String> getAddressDetails(double lat, double lon) {
         // Checks cache before calling API
         String key = lat + "," + lon;
         if (addressCache.containsKey(key)) {
             return addressCache.get(key);
         }
 
-        RestTemplate restTemplate = new RestTemplate();
-        String url = String.format("https://nominatim.openstreetmap.org/reverse?lat=%f&lon=%f&format=json&addressdetails=1", lat, lon);
+        String uri = String.format("https://nominatim.openstreetmap.org/reverse?lat=%f&lon=%f&format=json&addressdetails=1", lat, lon);
 
-        ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+        Map<String, Object> response = restTemplate.getForObject(uri, Map.class);
 
-        Map<String, Object> responseBody = response.getBody();
-        Map<String, String> address = responseBody != null ? (Map<String, String>) responseBody.get("address") : Collections.emptyMap();
+        Map<String, String> address = response.containsKey("address")
+                ? (Map<String, String>) response.get("address")
+                : Collections.emptyMap();
 
         // Puts address details into API
         addressCache.put(key, address);
-        return Collections.emptyMap();
+        return address;
     }
 
     /*
     * Retrieves all courts within a given area.
     * */
     public Set<BasketballCourt> getCourtsInArea(double latitude, double longitude, int range) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("referer", "https://jinhakimgh.github.io/Basketball-Court-Finder");
-        headers.set("User-Agent", "Basketball Court Finder");
+        String apiUrl = getApiUrl(latitude, longitude, range);
 
-        HttpEntity<?> entity = new HttpEntity<>(headers);
+        OverpassResponse response = restTemplate.getForObject(apiUrl, OverpassResponse.class);
 
-        String locationFilter = String.format("around:%d,%f,%f", range, latitude, longitude);
-
-        // Api call to overpass api
-        UriComponents uriComponents = UriComponentsBuilder.newInstance()
-                .scheme("https")
-                .host("overpass-api.de")
-                .path("/api/interpreter")
-                .queryParam("data", String.format("[out:json];(way(%s)[\"amenity\"=\"community_centre\"];" +
-                        "way(%s)[\"leisure\"=\"pitch\"][\"sport\"=\"basketball\"];" +
-                        "way(%s)[\"amenity\"=\"school\"][\"sport\"=\"basketball\"];" +
-                        ");out center; out tags;", locationFilter, locationFilter, locationFilter))
-                .build()
-                .encode();
-
-
-        RestTemplate restTemplate = new RestTemplate();
-
-        ResponseEntity<OverpassResponse> response = restTemplate.exchange(
-                uriComponents.toUri(),
-                HttpMethod.GET,
-                entity,
-                OverpassResponse.class
-        );
-
-        OverpassResponse responseBody = response.getBody();
+        if (response.getElements().isEmpty()) {
+            return Collections.emptySet();
+        }
 
         // Get list of elements
-        List<OverpassResponse.Element> elements = responseBody != null ? responseBody.getElements() :
-                Collections.emptyList();
+        List<OverpassResponse.Element> elements = response.getElements();
         Set<BasketballCourt> courts = Collections.synchronizedSet(new HashSet<>());
 
         // Create a list of IDs from the elements
@@ -158,5 +114,20 @@ public class BasketballCourtService {
         });
 
         return courts;
+    }
+
+    private static String getApiUrl(double latitude, double longitude, int range) {
+        String locationFilter = String.format("around:%d,%f,%f", range, latitude, longitude);
+
+        // Api call to overpass api
+        String query = String.format("[out:json];" +
+                "(way(%s)[\"amenity\"=\"community_centre\"];" +
+                "way(%s)[\"leisure\"=\"pitch\"][\"sport\"=\"basketball\"];" +
+                "way(%s)[\"amenity\"=\"school\"][\"sport\"=\"basketball\"];" +
+                ");out center; out tags;", locationFilter, locationFilter, locationFilter);
+
+        // Using RestClient for the API call
+        String apiUrl = String.format("https://overpass-api.de/api/interpreter?data=%s", query);
+        return apiUrl;
     }
 }

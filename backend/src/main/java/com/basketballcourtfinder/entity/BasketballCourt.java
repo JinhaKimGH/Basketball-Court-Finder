@@ -28,7 +28,7 @@ public class BasketballCourt {
     @Column(nullable = false)
     private String name;
 
-    private int hoops = 0;
+    private int hoops;
 
     private String surface;
 

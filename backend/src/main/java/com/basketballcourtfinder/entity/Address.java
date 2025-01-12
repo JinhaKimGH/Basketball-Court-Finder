@@ -35,7 +35,6 @@ public class Address {
         this.street = element.getTag("addr:street");
         this.city = element.getTag("addr:city");
         this.state = element.getTag("addr:province") != null ? element.getTag("addr:province") : element.getTag("addr:state");
-        this.city = element.getTag("addr:city");
         this.country = element.getTag("addr:country");
         this.postal_code = element.getTag("addr:postcode");
     }
