@@ -83,7 +83,7 @@ public class UserControllerTest {
         Long mockUserId = 1L;
 
         // User not found in service
-        when(service.get(mockUserId)).thenThrow(new UserNotFoundException("User not found."));
+        when(service.get(mockUserId)).thenThrow(new UserNotFoundException(mockUserId));
 
         // Perform request
         mockMvc.perform(get("/api/users")
@@ -272,7 +272,7 @@ public class UserControllerTest {
         Long mockUserId = 1L;
 
         // Mock Service
-        doThrow(new UserNotFoundException("User not found")).when(service).updateEmail(mockUserId, userDTO.getEmail());
+        doThrow(new UserNotFoundException(mockUserId)).when(service).updateEmail(mockUserId, userDTO.getEmail());
 
         // Perform request
         mockMvc.perform(put("/api/users")

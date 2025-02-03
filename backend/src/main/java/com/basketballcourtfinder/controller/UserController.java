@@ -6,12 +6,11 @@ import com.basketballcourtfinder.dto.UserProjection;
 import com.basketballcourtfinder.exceptions.UserAlreadyExistsException;
 import com.basketballcourtfinder.exceptions.UserNotFoundException;
 import com.basketballcourtfinder.service.UserService;
+import com.basketballcourtfinder.util.AuthUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,20 +32,11 @@ public class UserController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<?> get() {
         // User ID Found from Token
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // Check if not set in token
-        if (authentication == null || authentication.getPrincipal() == null) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Unauthorized: User ID not found");
-        }
-
         Long userId;
         try {
-            // retrieves userID from token
-            userId = (Long) authentication.getPrincipal();
-        } catch (ClassCastException e) {
-            // User ID is not set right in the token generation
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Unauthorized: Invalid User ID format");
+            userId = AuthUtil.getAuthenticatedUserId();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(e.getMessage());
         }
 
         try {
@@ -55,7 +45,7 @@ public class UserController {
 
             return ResponseEntity.ok(user);
         } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND).body("User not found");
+            return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND).body(e.getMessage());
         }
 
 
@@ -109,19 +99,25 @@ public class UserController {
         }
 
         // User ID Found from Token
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = (Long) authentication.getPrincipal(); // user ID is set as principal
+        Long userId;
+        try {
+            userId = AuthUtil.getAuthenticatedUserId();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(e.getMessage());
+        }
 
         // Updates attribute based on the parameter passed in
         try {
-            if (userDTO.getEmail() != null | userDTO.getDisplayName() != null | userDTO.getPassword() != null) {
-                if (userDTO.getEmail() != null) {
+            if ((userDTO.getEmail() != null && !userDTO.getEmail().isEmpty())  |
+                   (userDTO.getDisplayName() != null && !userDTO.getDisplayName().isEmpty()) |
+                   (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty())) {
+                if (userDTO.getEmail() != null && !userDTO.getEmail().isEmpty()) {
                     service.updateEmail(userId, userDTO.getEmail());
                 }
-                if (userDTO.getPassword() != null) {
+                if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
                     service.updatePassword(userId, userDTO.getPassword());
                 }
-                if (userDTO.getDisplayName() != null) {
+                if (userDTO.getDisplayName() != null && !userDTO.getDisplayName().isEmpty()) {
                     service.updateDisplayName(userId, userDTO.getDisplayName());
                 }
             }
@@ -132,7 +128,7 @@ public class UserController {
 
             return ResponseEntity.ok("User updated successfully");
         } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND).body("User not found");
+            return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND).body(e.getMessage());
         } catch (IllegalArgumentException e) {
             // Exception for when the new update doesn't result in any change
             return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(e.getMessage());
@@ -147,25 +143,16 @@ public class UserController {
     * */
     @DeleteMapping()
     public ResponseEntity<String> deleteUser() {
-        // Retrieve authentication
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // Check if not set in token
-        if (authentication == null || authentication.getPrincipal() == null) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Unauthorized: User ID not found");
-        }
-
-        Long tokenUserId;
+        // User ID Found from Token
+        Long userId;
         try {
-            // retrieves userID from token
-            tokenUserId = (Long) authentication.getPrincipal();
-        } catch (ClassCastException e) {
-            // User ID is not set right in the token generation
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Unauthorized: Invalid User ID format");
+            userId = AuthUtil.getAuthenticatedUserId();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(e.getMessage());
         }
 
         // Delete user, returns true if successful
-        if( service.deleteUser(tokenUserId) ) {
+        if( service.deleteUser(userId) ) {
             return ResponseEntity.ok("User deleted successfully");
         }
 

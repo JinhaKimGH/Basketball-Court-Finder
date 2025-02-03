@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Map;
 import java.util.Objects;
@@ -14,6 +15,7 @@ import java.util.Objects;
 @Entity
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class BasketballCourt {
     @Id
     @Column(nullable = false)

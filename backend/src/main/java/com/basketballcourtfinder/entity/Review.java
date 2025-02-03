@@ -5,30 +5,34 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.Date;
 
 @Entity
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long review_id;
+    private long reviewId;
 
     @ManyToOne
     @JoinColumn(name="user_id")
+    @ToString.Exclude
     private User user;
 
     @ManyToOne
     @JoinColumn(name="court_id")
+    @ToString.Exclude
     private BasketballCourt court;
 
     private String body;
 
+    @Min(1) @Max(5)
     @Column(nullable = false)
-    @Min(1)
-    @Max(5)
     private int rating;
 
     @Column(nullable = false)
@@ -36,7 +40,16 @@ public class Review {
 
     private String title;
 
-    @Column(nullable=false)
     @Min(0)
+    @Column(nullable = false)
     private int points;
+
+    @Column(nullable = false)
+    private boolean isEdited = false;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = new Date();
+    }
+
 }

@@ -46,6 +46,11 @@ public class BasketballCourtService {
                     court.setAddress(getAddressDetails(court.getLat(), court.getLon()));
                 }
             }
+
+            if (court != null) {
+                court.setId(court_id);
+                repository.save(court);
+            }
         }
 
         return court;
@@ -100,17 +105,26 @@ public class BasketballCourtService {
         // For each element, retrieve the BasketballCourt object, complete address and add to final hash set
         elements.parallelStream().forEach(element -> {
             // Get from DB or create object from API
-            BasketballCourt court = existingCourtMap.getOrDefault(element.getId(), new BasketballCourt(element));
+            BasketballCourt court = existingCourtMap.get(element.getId());
 
-            // If no lat/lon given, incomplete data, skip court
-            if (!(court.getLat() == 0 && court.getLon() == 0)) {
+            if (court == null) {
+                court = new BasketballCourt(element);
+
+                // If no lat/lon given, skip court
+                if (court.getLat() == 0 && court.getLon() == 0) {
+                    return;
+                }
+
                 // If address is incomplete, get address details from Nominatim API
                 if (court.getAddress().isIncomplete()) {
                     court.setAddress(getAddressDetails(court.getLat(), court.getLon()));
                 }
 
-                courts.add(court);
+                // Save the new court in the repository
+                court = repository.save(court);
             }
+
+            courts.add(court);
         });
 
         return courts;

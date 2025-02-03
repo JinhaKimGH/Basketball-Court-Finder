@@ -42,7 +42,7 @@ public class UserService {
         UserProjection user = repository.findProjectedById(userId).orElse(null);
 
         if (user == null) {
-            throw new UserNotFoundException("User not found.");
+            throw new UserNotFoundException(userId);
         }
 
         return user;
@@ -115,7 +115,7 @@ public class UserService {
      * Updates the email of the user
      * */
     public void updateEmail(Long userId, String email) {
-        User user = repository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found."));
+        User user = repository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
         if (Objects.equals(email, user.getEmail())) {
             throw new IllegalArgumentException("The new email address must be different from the current email address.");
@@ -128,7 +128,7 @@ public class UserService {
      * Updates the user's password
      * */
     public void updatePassword(Long userId, String password) throws NoSuchAlgorithmException {
-        User user = repository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found."));
+        User user = repository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
         if (Objects.equals(hashPassword(password, user.getSalt()), user.getPassword())) {
             throw new IllegalArgumentException("The new password must be different from the current password.");
@@ -151,7 +151,7 @@ public class UserService {
      * Updates the user's display name.
      * */
     public void updateDisplayName(Long userId, String displayName) {
-        User user = repository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found."));
+        User user = repository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
         if (Objects.equals(displayName, user.getDisplayName())) {
             throw new IllegalArgumentException("The new display name must be different from the current display name.");
