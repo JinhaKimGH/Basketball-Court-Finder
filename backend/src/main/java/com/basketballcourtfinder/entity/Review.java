@@ -47,6 +47,26 @@ public class Review {
     @Column(nullable = false)
     private boolean isEdited = false;
 
+    private int voteCount = 0;
+
+    // Increment vote count
+    public void incrementVoteCount() {
+        this.voteCount++;
+    }
+
+    public void incrementVoteCount(int count) {
+        this.voteCount = this.voteCount + count;
+    }
+
+    // Decrement vote count
+    public void decrementVoteCount() {
+        this.voteCount--;
+    }
+
+    public void decrementVoteCount(int count) {
+        this.voteCount = this.voteCount - count;
+    }
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = new Date();

@@ -2,8 +2,8 @@ package com.basketballcourtfinder.service;
 
 import com.basketballcourtfinder.dto.UserProjection;
 import com.basketballcourtfinder.entity.User;
-import com.basketballcourtfinder.exceptions.UserAlreadyExistsException;
-import com.basketballcourtfinder.exceptions.UserNotFoundException;
+import com.basketballcourtfinder.exceptions.EntityAlreadyExistsException;
+import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -42,7 +42,7 @@ public class UserService {
         UserProjection user = repository.findProjectedById(userId).orElse(null);
 
         if (user == null) {
-            throw new UserNotFoundException(userId);
+            throw new EntityNotFoundException("user", userId);
         }
 
         return user;
@@ -79,9 +79,9 @@ public class UserService {
         Optional<User> displayNameExists = repository.findByDisplayName(displayName);
 
         if (emailExists.isPresent()) {
-            throw new UserAlreadyExistsException("Email is already registered");
+            throw new EntityAlreadyExistsException("Email is already registered");
         } else if (displayNameExists.isPresent()) {
-            throw new UserAlreadyExistsException("Display name is already taken");
+            throw new EntityAlreadyExistsException("Display name is already taken");
         }
 
         // Generates a random salt
@@ -115,7 +115,7 @@ public class UserService {
      * Updates the email of the user
      * */
     public void updateEmail(Long userId, String email) {
-        User user = repository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+        User user = repository.findById(userId).orElseThrow(() -> new EntityNotFoundException("user", userId));
 
         if (Objects.equals(email, user.getEmail())) {
             throw new IllegalArgumentException("The new email address must be different from the current email address.");
@@ -128,7 +128,7 @@ public class UserService {
      * Updates the user's password
      * */
     public void updatePassword(Long userId, String password) throws NoSuchAlgorithmException {
-        User user = repository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+        User user = repository.findById(userId).orElseThrow(() -> new EntityNotFoundException("user", userId));
 
         if (Objects.equals(hashPassword(password, user.getSalt()), user.getPassword())) {
             throw new IllegalArgumentException("The new password must be different from the current password.");
@@ -151,7 +151,7 @@ public class UserService {
      * Updates the user's display name.
      * */
     public void updateDisplayName(Long userId, String displayName) {
-        User user = repository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+        User user = repository.findById(userId).orElseThrow(() -> new EntityNotFoundException("user", userId));
 
         if (Objects.equals(displayName, user.getDisplayName())) {
             throw new IllegalArgumentException("The new display name must be different from the current display name.");

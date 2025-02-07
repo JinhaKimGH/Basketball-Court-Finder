@@ -3,8 +3,8 @@ package com.basketballcourtfinder.controller;
 import com.basketballcourtfinder.dto.LoginDTO;
 import com.basketballcourtfinder.dto.UserDTO;
 import com.basketballcourtfinder.dto.UserProjection;
-import com.basketballcourtfinder.exceptions.UserAlreadyExistsException;
-import com.basketballcourtfinder.exceptions.UserNotFoundException;
+import com.basketballcourtfinder.exceptions.EntityNotFoundException;
+import com.basketballcourtfinder.exceptions.EntityAlreadyExistsException;
 import com.basketballcourtfinder.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -83,13 +83,13 @@ public class UserControllerTest {
         Long mockUserId = 1L;
 
         // User not found in service
-        when(service.get(mockUserId)).thenThrow(new UserNotFoundException(mockUserId));
+        when(service.get(mockUserId)).thenThrow(new EntityNotFoundException("user", mockUserId));
 
         // Perform request
         mockMvc.perform(get("/api/users")
                 .header("Authorization", "Bearer mock-token"))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("User not found"));
+                .andExpect(content().string("user with ID 1 not found"));
     }
 
     @Test
@@ -121,7 +121,7 @@ public class UserControllerTest {
         String userJson = objectMapper.writeValueAsString(userDTO);
 
         // Mock service
-        doThrow(new UserAlreadyExistsException("User already exists"))
+        doThrow(new EntityAlreadyExistsException("User already exists"))
                 .when(service).saveUser(userDTO.getEmail(), userDTO.getPassword(), userDTO.getDisplayName());
 
         // Perform request
@@ -272,14 +272,14 @@ public class UserControllerTest {
         Long mockUserId = 1L;
 
         // Mock Service
-        doThrow(new UserNotFoundException(mockUserId)).when(service).updateEmail(mockUserId, userDTO.getEmail());
+        doThrow(new EntityNotFoundException("user", mockUserId)).when(service).updateEmail(mockUserId, userDTO.getEmail());
 
         // Perform request
         mockMvc.perform(put("/api/users")
                         .contentType("application/json")
                         .content(userJson))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("User not found"));
+                .andExpect(content().string("user with ID 1 not found"));
     }
 
     @Test

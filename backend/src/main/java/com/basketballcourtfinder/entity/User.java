@@ -2,8 +2,6 @@ package com.basketballcourtfinder.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -29,18 +27,30 @@ public class User {
     private String displayName;
 
     @Column(nullable = false)
-    @Min(-100)
-    @Max(100)
-    private int trust = 0;
+    private int upvoteCount;
+
+    @Column(nullable = false)
+    private int downvoteCount;
 
     public User(String email, String salt, String password, String displayName) {
         this.email = email;
         this.salt = salt;
         this.password = password;
         this.displayName = displayName;
+        this.upvoteCount = 0;
+        this.downvoteCount = 0;
     }
 
     public User() {
-        this.trust = 0;
+        this.upvoteCount = 0;
+        this.downvoteCount = 0;
+    }
+
+    public double getTrustScore() {
+        // Calculate the trust score dynamically
+        if (upvoteCount + downvoteCount < 10) {
+            return 0; // Small number of votes == neutral trust
+        }
+        return (double) ((upvoteCount - downvoteCount) / (upvoteCount + downvoteCount)) * 100;
     }
 }

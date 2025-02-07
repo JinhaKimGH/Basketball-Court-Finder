@@ -3,11 +3,10 @@ package com.basketballcourtfinder.controller;
 import com.basketballcourtfinder.dto.LoginDTO;
 import com.basketballcourtfinder.dto.UserDTO;
 import com.basketballcourtfinder.dto.UserProjection;
-import com.basketballcourtfinder.exceptions.UserAlreadyExistsException;
-import com.basketballcourtfinder.exceptions.UserNotFoundException;
+import com.basketballcourtfinder.exceptions.EntityAlreadyExistsException;
+import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.service.UserService;
 import com.basketballcourtfinder.util.AuthUtil;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,14 +28,14 @@ public class UserController {
     * Gets the user's own information from the database
     * */
     @GetMapping
-    @ResponseStatus(HttpStatus.ACCEPTED)
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> get() {
         // User ID Found from Token
         Long userId;
         try {
             userId = AuthUtil.getAuthenticatedUserId();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
 
         try {
@@ -44,8 +43,8 @@ public class UserController {
             UserProjection user = service.get(userId);
 
             return ResponseEntity.ok(user);
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND).body(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
 
 
@@ -67,7 +66,7 @@ public class UserController {
         try {
             service.saveUser(user.getEmail(), user.getPassword(), user.getDisplayName());
             return ResponseEntity.status(HttpStatus.CREATED).body("User added successfully.");
-        } catch (UserAlreadyExistsException e) {
+        } catch (EntityAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
@@ -103,7 +102,7 @@ public class UserController {
         try {
             userId = AuthUtil.getAuthenticatedUserId();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
 
         // Updates attribute based on the parameter passed in
@@ -127,13 +126,13 @@ public class UserController {
             }
 
             return ResponseEntity.ok("User updated successfully");
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND).body(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalArgumentException e) {
             // Exception for when the new update doesn't result in any change
-            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR).body("Error updating user");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating user");
         }
 
     }
@@ -148,7 +147,7 @@ public class UserController {
         try {
             userId = AuthUtil.getAuthenticatedUserId();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
 
         // Delete user, returns true if successful
@@ -156,7 +155,7 @@ public class UserController {
             return ResponseEntity.ok("User deleted successfully");
         }
 
-        return ResponseEntity.status(HttpServletResponse.SC_NOT_FOUND).body("User not found");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
     }
 
 
