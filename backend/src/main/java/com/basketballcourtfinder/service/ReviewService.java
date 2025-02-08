@@ -9,10 +9,7 @@ import com.basketballcourtfinder.repository.UserRepository;
 import com.basketballcourtfinder.repository.VoteRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +31,10 @@ public class ReviewService {
 
     public List<ReviewResponseDTO> findCourtReviews(Long courtId, Long userId) {
         List<Review> reviews = reviewRepository.findByCourtId(courtId);
+
+        if (reviews.isEmpty()) {
+            return Collections.emptyList(); // Return early if no reviews
+        }
 
         // Fetch all votes by the user for these reviews in one query
         List<Vote> userVotes = voteRepository.findByUserIdAndReview_ReviewIdIn(userId,
@@ -62,10 +63,6 @@ public class ReviewService {
         }).collect(Collectors.toList());
     }
 
-    public Review findUserCourtReview(Long courtId, Long userId) {
-        return reviewRepository.findByCourtIdAndUserId(courtId, userId).orElse(null);
-    }
-
     public void saveReview(ReviewDTO reviewDTO, Long userId) {
 
         // Fetch user and court entities
@@ -74,14 +71,14 @@ public class ReviewService {
         BasketballCourt court = courtService.getCourt(reviewDTO.getCourtId());
 
         if (court == null) {
-            throw new EntityNotFoundException("review", reviewDTO.getCourtId());
+            throw new EntityNotFoundException("court", reviewDTO.getCourtId());
         }
 
         // Check if review already exists
         Optional<Review> found = reviewRepository.findByCourtIdAndUserId(reviewDTO.getCourtId(), userId);
 
         if (found.isPresent()) {
-            throw new IllegalArgumentException("Review already exists.");
+            throw new EntityNotFoundException("review", reviewDTO.getCourtId(), userId);
         }
 
         // Create a new Review entity
@@ -114,7 +111,7 @@ public class ReviewService {
         Optional<Review> found = reviewRepository.findByCourtIdAndUserId(courtId, userId);
 
         if (found.isEmpty()) {
-            throw new IllegalArgumentException("Review does not exist.");
+            throw new EntityNotFoundException("review", courtId, userId);
         }
 
         Review review = found.get();
@@ -140,7 +137,7 @@ public class ReviewService {
         Optional<Review> found = reviewRepository.findByCourtIdAndUserId(courtId, userId);
 
         if (found.isEmpty()) {
-            throw new IllegalArgumentException("Review does not exist.");
+            throw new EntityNotFoundException("review", courtId, userId);
         }
 
         Review review = found.get();
@@ -170,7 +167,7 @@ public class ReviewService {
         Optional<Review> found = reviewRepository.findByCourtIdAndUserId(courtId, userId);
 
         if (found.isEmpty()) {
-            throw new IllegalArgumentException("Review does not exist.");
+            throw new EntityNotFoundException("review", courtId, userId);
         }
 
         Review review = found.get();
@@ -196,7 +193,7 @@ public class ReviewService {
         Optional<Review> found = reviewRepository.findByCourtIdAndUserId(courtId, userId);
 
         if (found.isEmpty()) {
-            throw new IllegalArgumentException("Review does not exist.");
+            throw new EntityNotFoundException("review", courtId, userId);
         }
 
         Review review = found.get();
