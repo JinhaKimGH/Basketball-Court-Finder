@@ -4,6 +4,7 @@ import com.basketballcourtfinder.dto.CourtsDTO;
 import com.basketballcourtfinder.entity.BasketballCourt;
 import com.basketballcourtfinder.service.BasketballCourtService;
 import com.basketballcourtfinder.service.UserService;
+import com.basketballcourtfinder.util.PasswordUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -30,6 +31,9 @@ public class BasketballCourtControllerTest {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private PasswordUtils passwordUtils;
 
     @Test
     public void testGetCourt() throws Exception {

@@ -48,6 +48,9 @@ public class ReviewService {
             ReviewResponseDTO response = new ReviewResponseDTO();
             response.setReviewId(review.getReviewId());
             response.setContent(review.getBody());
+            response.setTitle(review.getTitle());
+            response.setEdited(review.isEdited());
+            response.setRating(review.getRating());
             response.setTotalVotes(review.getVoteCount());
             response.setAuthorDisplayName(author.getDisplayName());
             response.setAuthorTrustScore(author.getTrustScore());
