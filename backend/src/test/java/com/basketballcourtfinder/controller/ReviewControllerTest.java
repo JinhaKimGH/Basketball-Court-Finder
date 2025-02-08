@@ -44,15 +44,6 @@ public class ReviewControllerTest {
     @MockitoBean
     private ReviewService reviewService;
 
-    // @MockitoBean
-    // private VoteRepository voteRepository;
-    //
-    // @MockitoBean
-    // private UserRepository userRepository;
-    //
-    // @MockitoBean
-    // private BasketballCourtService courtService;
-
     @Mock
     Authentication authentication;
 
