@@ -5,19 +5,11 @@ import com.basketballcourtfinder.entity.User;
 import com.basketballcourtfinder.exceptions.EntityAlreadyExistsException;
 import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.repository.UserRepository;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import com.basketballcourtfinder.util.PasswordUtils;
 import org.springframework.security.crypto.keygen.KeyGenerators;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -25,19 +17,16 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository repository;
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    private final PasswordUtils passwordUtils;
 
-    @Value("${jwt.expiration}")
-    private long jwtExpiration;
-
-    public UserService(UserRepository repository) {
+    public UserService(UserRepository repository, PasswordUtils passwordUtils) {
         this.repository = repository;
+        this.passwordUtils = passwordUtils;
     }
 
     /*
-    * Retrieves the users information
-    * */
+     * Retrieves the users information
+     */
     public UserProjection get(Long userId) {
         UserProjection user = repository.findProjectedById(userId).orElse(null);
 
@@ -49,20 +38,21 @@ public class UserService {
     }
 
     /*
-    * Logs the user in and returns generated token
-    * */
+     * Logs the user in and returns generated token
+     */
     public String login(String email, String password) throws NoSuchAlgorithmException {
         // Checks if user exists first
         Optional<User> exists = repository.findByEmail(email);
-        if(exists.isPresent()) {
+        if (exists.isPresent()) {
             User user = exists.get();
 
             // Encodes the input with a hash + salt
-            String encoded = hashPassword(password, user.getSalt());
+            String encoded = passwordUtils.hashPassword(password, user.getSalt());
 
-            // Compares the hashed input with the hashed password and generates token if matched
+            // Compares the hashed input with the hashed password and generates token if
+            // matched
             if (user.getPassword().equals(encoded)) {
-                return generateToken(user);
+                return passwordUtils.generateToken(user);
             }
 
         }
@@ -71,8 +61,8 @@ public class UserService {
     }
 
     /*
-    * Saves the user to the database
-    * */
+     * Saves the user to the database
+     */
     public void saveUser(String email, String password, String displayName) throws NoSuchAlgorithmException {
         // Checks if email and display name exists, both should be unique values
         Optional<User> emailExists = repository.findByEmail(email);
@@ -88,7 +78,7 @@ public class UserService {
         String salt = KeyGenerators.string().generateKey();
 
         // Encodes the password by adding a salt plus hashing
-        String encoded = hashPassword(password, salt);
+        String encoded = passwordUtils.hashPassword(password, salt);
 
         // Creates the new user and saves it to the database
         User user = new User(email, salt, encoded, displayName);
@@ -98,8 +88,8 @@ public class UserService {
     }
 
     /*
-    * Deletes user by ID and returns true if user exists in the database.
-    * */
+     * Deletes user by ID and returns true if user exists in the database.
+     */
     public boolean deleteUser(long id) {
         Optional<User> user = repository.findById(id);
 
@@ -113,12 +103,13 @@ public class UserService {
 
     /*
      * Updates the email of the user
-     * */
+     */
     public void updateEmail(Long userId, String email) {
         User user = repository.findById(userId).orElseThrow(() -> new EntityNotFoundException("user", userId));
 
         if (Objects.equals(email, user.getEmail())) {
-            throw new IllegalArgumentException("The new email address must be different from the current email address.");
+            throw new IllegalArgumentException(
+                    "The new email address must be different from the current email address.");
         }
         user.setEmail(email);
         repository.save(user);
@@ -126,11 +117,11 @@ public class UserService {
 
     /*
      * Updates the user's password
-     * */
+     */
     public void updatePassword(Long userId, String password) throws NoSuchAlgorithmException {
         User user = repository.findById(userId).orElseThrow(() -> new EntityNotFoundException("user", userId));
 
-        if (Objects.equals(hashPassword(password, user.getSalt()), user.getPassword())) {
+        if (Objects.equals(passwordUtils.hashPassword(password, user.getSalt()), user.getPassword())) {
             throw new IllegalArgumentException("The new password must be different from the current password.");
         }
 
@@ -138,7 +129,7 @@ public class UserService {
         String salt = KeyGenerators.string().generateKey();
 
         // Encodes the password by adding a salt plus hashing
-        String encoded = hashPassword(password, salt);
+        String encoded = passwordUtils.hashPassword(password, salt);
 
         // Sets the new password and salt
         user.setPassword(encoded);
@@ -149,7 +140,7 @@ public class UserService {
 
     /*
      * Updates the user's display name.
-     * */
+     */
     public void updateDisplayName(Long userId, String displayName) {
         User user = repository.findById(userId).orElseThrow(() -> new EntityNotFoundException("user", userId));
 
@@ -159,30 +150,5 @@ public class UserService {
 
         user.setDisplayName(displayName);
         repository.save(user);
-    }
-
-    /*
-    * Generates a token for a logged-in user.
-    * */
-    private String generateToken(User user) {
-        // Secret string to key object
-        Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));;
-
-        return Jwts.builder()
-                .setSubject(user.getEmail())
-                .claim("userID", user.getId())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(key, SignatureAlgorithm.HS512)
-                .compact();
-    }
-
-    /*
-    * Hashes/encodes a password
-    * */
-    private String hashPassword(String password, String salt) throws NoSuchAlgorithmException {
-        final MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hash = digest.digest((salt.concat(password)).getBytes(StandardCharsets.UTF_8));
-        return Base64.getEncoder().encodeToString(hash);
     }
 }
