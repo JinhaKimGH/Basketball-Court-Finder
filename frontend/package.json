@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@chakra-ui/react": "^3.8.0",
+    "@chakra-ui/theme": "^3.4.6",
     "@emotion/react": "^11.14.0",
     "@mdi/js": "^7.2.96",
     "@mdi/react": "^1.6.1",

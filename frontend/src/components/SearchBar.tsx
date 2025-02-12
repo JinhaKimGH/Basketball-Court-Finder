@@ -1,7 +1,8 @@
 import { Container, Flex, Image, Input, useBreakpointValue } from "@chakra-ui/react";
-import { LuSearch, LuCircleUserRound } from "react-icons/lu";
+import { LuSearch } from "react-icons/lu";
 import { InputGroup } from "@/components/ui/input-group";
 import { Tooltip } from "@/components/ui/tooltip";
+import Login from "./Login";
 
 
 /**
@@ -18,15 +19,6 @@ export default function SearchBar() : JSX.Element{
     </Tooltip>
   );
 
-  // Create user icon with custom size
-  const UserIcon = ({ size }: { size: number }) => {
-    return (
-      <Tooltip content="Sign In" openDelay={100}>
-        <LuCircleUserRound size={size} color="#45a2ff" cursor="pointer" />
-      </Tooltip>
-    );
-  };
-
   // Screen sized-based icons
   const endElement = useBreakpointValue({ 
     base: 
@@ -35,7 +27,7 @@ export default function SearchBar() : JSX.Element{
         alignItems="center"
       >
         {searchIcon}
-        <UserIcon size={22} />
+        <Login iconSize={22} />
       </Flex>, 
     md: 
       <Flex
@@ -43,7 +35,7 @@ export default function SearchBar() : JSX.Element{
         alignItems="center"
       >
         {searchIcon}
-        <UserIcon size={22} />
+        <Login iconSize={22} />
       </Flex>, 
     lg: searchIcon
   });
@@ -56,7 +48,7 @@ export default function SearchBar() : JSX.Element{
 
   // Show LuCircleRound in the top right only in large screens
   const userElement = useBreakpointValue({
-    lg: <UserIcon size={30} />
+    lg: <Login iconSize={30} />
   });
 
   return (
@@ -64,12 +56,11 @@ export default function SearchBar() : JSX.Element{
       <Container
         position="absolute"
         zIndex="1"
-        minWidth="98vw"
+        minWidth="100vw"
         display="flex"
         alignItems="center"
         justifyContent="space-between"
         mt="5"
-        ml={{base: "0",lg: "10"}}
       >
         <InputGroup
           startElement={
@@ -80,7 +71,7 @@ export default function SearchBar() : JSX.Element{
               objectFit="cover"
             />
           }
-          width={{base: "100%", md: "100%", lg: "18%"}}
+          width={{base: "100%", md: "100%", lg: "400px"}}
           endElement={endElement}
         >
           <Input 
