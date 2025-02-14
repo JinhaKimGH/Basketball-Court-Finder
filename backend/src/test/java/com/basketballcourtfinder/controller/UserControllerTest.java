@@ -192,8 +192,7 @@ public class UserControllerTest {
         mockMvc.perform(post("/api/users/login")
                         .contentType("application/json")
                         .content(loginJson))
-                .andExpect(status().isOk())
-                .andExpect(content().string("token"));
+                .andExpect(status().isOk());
     }
 
     @Test

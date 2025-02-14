@@ -7,6 +7,8 @@ import com.basketballcourtfinder.exceptions.EntityAlreadyExistsException;
 import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.service.UserService;
 import com.basketballcourtfinder.util.AuthUtil;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -75,11 +77,17 @@ public class UserController {
     * Logs the user into the service and produces a token that must be sent to interact with other endpoints.
     * */
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginDTO loginDTO) throws NoSuchAlgorithmException {
+    public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO, HttpServletResponse response) throws NoSuchAlgorithmException {
         String token = service.login(loginDTO.getEmail(), loginDTO.getPassword());
 
         if (token != null) {
-            return ResponseEntity.ok(token);
+            Cookie cookie = new Cookie("BCFtoken", token);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true);
+            cookie.setMaxAge(86400);
+            cookie.setPath("/");
+            response.addCookie(cookie);
+            return ResponseEntity.ok().build();
         }
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials!");
