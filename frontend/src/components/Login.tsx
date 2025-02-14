@@ -27,13 +27,74 @@ export default function Login(
     iconSize: number
   }){
 
+  const baseApiUrl = import.meta.env.VITE_APP_API_BASE_URL;
+
+  const [loginData, setLoginData] = React.useState({
+    email: "",
+    password: ""
+  });
+  
   const [emailValid, setEmailValid] = React.useState(true);
 
-  const [passwordValid, setPasswordValid] = React.useState(true);
+  const [errorMessage, setErrorMessage] = React.useState('');
+
+  // Update login data from fields
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setLoginData((prev) => ({...prev, [name]: value}));
+  }
+
+  // Helper function ensures that inputted email is a valid email
+  function validateEmail(inputEmail: string){
+    const emailRegex = new RegExp(/^[A-Za-z0-9_!#$%&'*+/=?`{|}~^.-]+@[A-Za-z0-9.-]+$/, 'gm');
+
+    return emailRegex.test(inputEmail);
+  }
+
+  // Login Submission
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailValid(true);
+    setErrorMessage('');
+
+    if (!validateEmail(loginData.email)) {
+      setEmailValid(false); 
+      return;
+    }
+    
+    fetch(`${baseApiUrl}/api/users/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(loginData),
+    }).then(
+      (res) => {
+        if (res.ok) {
+          // TODO: Update with some sort of indication that it succeeded -> new look now that user has logged in
+          console.log(res)
+          return res;
+        } else {
+          switch (res.status) {
+            case 401:
+              setErrorMessage("Incorrect email or password.");
+              break;
+            default:
+              setErrorMessage('An unexpected error occurred.');
+          }
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+      })
+      .catch((error) => {
+        // TODO: Replace with logging later
+      });
+
+  }
+
 
   return(
     <DialogRoot 
-      size={{ base: "sm", md: "sm", lg: "md" }}
+      size={{ base: "md", md: "md", lg: "md" }}
       placement="center"
     >
       <Tooltip content="Sign In" openDelay={100}>
@@ -51,23 +112,32 @@ export default function Login(
         </DialogHeader>
 
         <DialogBody>
-          <Fieldset.Root size={{base: "sm", md: "lg"}}>
+          <Fieldset.Root size={{base: "sm", md: "lg"}} invalid>
             <Fieldset.Content>
-              <Field label="Email Address" invalid={!emailValid}>
-                <Input name="email" />
+              <Field label="Email Address" invalid={!emailValid} errorText={"Invalid email."}>
+                <Input 
+                  name="email"
+                  value={loginData.email}
+                  onChange={handleChange}
+                />
               </Field>
 
-              <Field label="Password" invalid={!passwordValid}>
-                <Input name="password" type="password"/>
+              <Field label="Password">
+                <Input 
+                  name="password" 
+                  value={loginData.password}
+                  onChange={handleChange}
+                  type="password"
+                />
               </Field>
             </Fieldset.Content>
-
             {
-              (!emailValid || !passwordValid) &&
+              errorMessage &&
               <Fieldset.ErrorText>
-                Some fields are invalid. Please check them.
+                {errorMessage}
               </Fieldset.ErrorText>
             }
+
           </Fieldset.Root>
         </DialogBody>
 
@@ -76,7 +146,7 @@ export default function Login(
           <DialogActionTrigger asChild>
             <Button variant="outline">Cancel</Button>
           </DialogActionTrigger>
-          <Button>Login</Button>
+          <Button onClick={handleLogin} type="submit">Login</Button>
         </DialogFooter>
       </DialogContent>
     </DialogRoot>
