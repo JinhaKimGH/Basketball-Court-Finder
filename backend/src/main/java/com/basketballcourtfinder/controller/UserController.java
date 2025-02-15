@@ -8,6 +8,7 @@ import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.service.UserService;
 import com.basketballcourtfinder.util.AuthUtil;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -16,7 +17,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
 import java.util.Map;
 
 @RestController
@@ -31,7 +31,7 @@ public class UserController {
     /*
     * Gets the user's own information from the database
     * */
-    @GetMapping
+    @GetMapping()
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> get() {
         // User ID Found from Token
@@ -50,8 +50,6 @@ public class UserController {
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
-
-
     }
 
     /*
@@ -79,21 +77,45 @@ public class UserController {
     * Logs the user into the service and produces a token that must be sent to interact with other endpoints.
     * */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO, HttpServletResponse response) throws NoSuchAlgorithmException {
+    public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO, HttpServletRequest request, HttpServletResponse response) throws NoSuchAlgorithmException {
         Map<String, String> map = service.login(loginDTO.getEmail(), loginDTO.getPassword());
 
         if (map != null) {
             String token = map.get("token");
+
+            // Create cookie with JWT token
             Cookie cookie = new Cookie("BCFtoken", token);
             cookie.setHttpOnly(true);
-            cookie.setSecure(true);
             cookie.setMaxAge(86400);
             cookie.setPath("/");
+            if (AuthUtil.isLocal(request)) {
+                cookie.setAttribute("SameSite", "Lax");
+                cookie.setSecure(false);
+            } else {
+                cookie.setAttribute("SameSite", "None");
+                cookie.setSecure(true);
+            }
+
             response.addCookie(cookie);
-            return ResponseEntity.ok(Collections.singletonMap("displayName", map.get("displayName")));
+            map.remove("token");
+            return ResponseEntity.ok(map);
         }
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials!");
+    }
+
+    /*
+     * Logs out user, immediately expires the cookie
+     */
+    @PostMapping("/api/users/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("BCFtoken", "");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true); // Keep this if using HTTPS
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // Expire immediately
+        response.addCookie(cookie);
+        return ResponseEntity.ok().build();
     }
 
     /*
@@ -168,6 +190,4 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
     }
-
-
 }

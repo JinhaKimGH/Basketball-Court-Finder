@@ -192,6 +192,7 @@ public class UserControllerTest {
         Map<String, String> map = new HashMap<>();
         map.put("token", "token");
         map.put("displayName", "a");
+        map.put("email", "a@email.com");
         when(service.login(loginDTO.getEmail(), loginDTO.getPassword())).thenReturn(map);
 
         // Perform request
@@ -199,7 +200,9 @@ public class UserControllerTest {
                         .contentType("application/json")
                         .content(loginJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.displayName").value("a"));
+                .andExpect(jsonPath("$.displayName").value("a"))
+                .andExpect(jsonPath("$.email").value("a@email.com"))
+                .andExpect(jsonPath("$.token").doesNotExist());
     }
 
     @Test

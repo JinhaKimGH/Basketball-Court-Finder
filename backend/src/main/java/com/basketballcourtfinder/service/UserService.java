@@ -58,6 +58,7 @@ public class UserService {
                 // Return both token and display name
                 Map<String, String> response = new HashMap<>();
                 response.put("token", token);
+                response.put("email", user.getEmail() != null ? user.getEmail() : "");
                 response.put("displayName", user.getDisplayName() != null ? user.getDisplayName() : "User");
                 return response;
             }
