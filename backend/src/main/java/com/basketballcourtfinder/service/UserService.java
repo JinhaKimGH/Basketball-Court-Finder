@@ -10,6 +10,8 @@ import org.springframework.security.crypto.keygen.KeyGenerators;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -40,7 +42,7 @@ public class UserService {
     /*
      * Logs the user in and returns generated token
      */
-    public String login(String email, String password) throws NoSuchAlgorithmException {
+    public Map<String, String> login(String email, String password) throws NoSuchAlgorithmException {
         // Checks if user exists first
         Optional<User> exists = repository.findByEmail(email);
         if (exists.isPresent()) {
@@ -52,7 +54,12 @@ public class UserService {
             // Compares the hashed input with the hashed password and generates token if
             // matched
             if (user.getPassword().equals(encoded)) {
-                return passwordUtils.generateToken(user);
+                String token = passwordUtils.generateToken(user);
+                // Return both token and display name
+                Map<String, String> response = new HashMap<>();
+                response.put("token", token);
+                response.put("displayName", user.getDisplayName() != null ? user.getDisplayName() : "User");
+                return response;
             }
 
         }

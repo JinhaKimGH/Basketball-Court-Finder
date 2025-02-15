@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -77,16 +78,18 @@ public class UserServiceTest {
         mockUser.setId(1L);
         mockUser.setEmail(email);
         mockUser.setPassword(password);
+        mockUser.setDisplayName("mock user");
         mockUser.setSalt("salt");
 
         when(repository.findByEmail(email)).thenReturn(Optional.of(mockUser));
         when(passwordUtils.hashPassword(password, "salt")).thenReturn(password);
         when(passwordUtils.generateToken(mockUser)).thenReturn("token");
 
-        String token = service.login(email, password);
+        Map<String, String> map = service.login(email, password);
 
-        assertNotNull(token);
-        assertEquals("token", token);
+        assertNotNull(map);
+        assertEquals("token", map.get("token"));
+        assertEquals("mock user", map.get("displayName"));
     }
 
     @Test

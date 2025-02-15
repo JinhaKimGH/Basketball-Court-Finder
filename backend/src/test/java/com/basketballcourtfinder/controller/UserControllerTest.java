@@ -3,8 +3,8 @@ package com.basketballcourtfinder.controller;
 import com.basketballcourtfinder.dto.LoginDTO;
 import com.basketballcourtfinder.dto.UserDTO;
 import com.basketballcourtfinder.dto.UserProjection;
-import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.exceptions.EntityAlreadyExistsException;
+import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -18,6 +18,9 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -186,13 +189,17 @@ public class UserControllerTest {
         String loginJson = objectMapper.writeValueAsString(loginDTO);
 
         // Mock service
-        when(service.login(loginDTO.getEmail(), loginDTO.getPassword())).thenReturn("token");
+        Map<String, String> map = new HashMap<>();
+        map.put("token", "token");
+        map.put("displayName", "a");
+        when(service.login(loginDTO.getEmail(), loginDTO.getPassword())).thenReturn(map);
 
         // Perform request
         mockMvc.perform(post("/api/users/login")
                         .contentType("application/json")
                         .content(loginJson))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.displayName").value("a"));
     }
 
     @Test

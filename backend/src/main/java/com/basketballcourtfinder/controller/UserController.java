@@ -16,6 +16,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -78,16 +80,17 @@ public class UserController {
     * */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO, HttpServletResponse response) throws NoSuchAlgorithmException {
-        String token = service.login(loginDTO.getEmail(), loginDTO.getPassword());
+        Map<String, String> map = service.login(loginDTO.getEmail(), loginDTO.getPassword());
 
-        if (token != null) {
+        if (map != null) {
+            String token = map.get("token");
             Cookie cookie = new Cookie("BCFtoken", token);
             cookie.setHttpOnly(true);
             cookie.setSecure(true);
             cookie.setMaxAge(86400);
             cookie.setPath("/");
             response.addCookie(cookie);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(Collections.singletonMap("displayName", map.get("displayName")));
         }
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials!");
