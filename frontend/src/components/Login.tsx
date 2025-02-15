@@ -13,7 +13,8 @@ import {
   } from "@/components/ui/dialog";
   import { LuCircleUserRound } from "react-icons/lu";
   import { Tooltip } from "@/components/ui/tooltip";
-import React from "react";
+import React, {useContext} from "react";
+import { AuthContext } from "@/context/AuthContext";
 
 /**
  * Login Component
@@ -28,6 +29,13 @@ export default function Login(
   }){
 
   const baseApiUrl = import.meta.env.VITE_APP_API_BASE_URL;
+
+  // Auth State setter
+  const authContext = useContext(AuthContext);
+  if (!authContext) {
+    throw new Error("AuthContext is null");
+  }
+  const { setAuthState } = authContext;
 
   const [loginData, setLoginData] = React.useState({
     email: "",
@@ -67,13 +75,14 @@ export default function Login(
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(loginData),
     }).then(
       (res) => {
         if (res.ok) {
           // TODO: Update with some sort of indication that it succeeded -> new look now that user has logged in
-          console.log(res)
-          return res;
+          // Use AuthContext and also update Login component so that there are tabs and one can access sign-up
+          return res.json();
         } else {
           switch (res.status) {
             case 401:
@@ -85,7 +94,11 @@ export default function Login(
           throw new Error(`HTTP error! status: ${res.status}`);
         }
       })
+      .then((data) => {
+        setAuthState({isLoggedIn: true, user: data});
+      })
       .catch((error) => {
+        console.error("Error logging in: ", error);
         // TODO: Replace with logging later
       });
 
