@@ -1,14 +1,13 @@
-import { Container, Flex, Image, Input, useBreakpointValue } from "@chakra-ui/react";
+import { Box, Container, Flex, Image, Input, useBreakpointValue } from "@chakra-ui/react";
 import { LuSearch } from "react-icons/lu";
 import { InputGroup } from "@/components/ui/input-group";
 import { Tooltip } from "@/components/ui/tooltip";
-import AuthPopup from "./AuthPopup";
+import ProfilePopup from "./ProfilePopup";
 
 
 /**
- * Stars Component
+ * SearchBar Component
  * 
- * @param {Object} props  – Component props.
  * @returns {JSX.Element}
  */
 export default function SearchBar() : JSX.Element{
@@ -27,7 +26,7 @@ export default function SearchBar() : JSX.Element{
         alignItems="center"
       >
         {searchIcon}
-        <AuthPopup iconSize={22} />
+        <ProfilePopup iconSize={22}/>
       </Flex>, 
     md: 
       <Flex
@@ -35,7 +34,7 @@ export default function SearchBar() : JSX.Element{
         alignItems="center"
       >
         {searchIcon}
-        <AuthPopup iconSize={22} />
+        <ProfilePopup iconSize={22}/>
       </Flex>, 
     lg: searchIcon
   });
@@ -48,14 +47,14 @@ export default function SearchBar() : JSX.Element{
 
   // Show LuCircleRound in the top right only in large screens
   const userElement = useBreakpointValue({
-    lg: <AuthPopup iconSize={30} />
+    lg: <ProfilePopup iconSize={30}/>
   });
-
+  
   return (
     <>
       <Container
         position="absolute"
-        zIndex="1"
+        zIndex="10"
         minWidth="100vw"
         display="flex"
         alignItems="center"
@@ -83,7 +82,9 @@ export default function SearchBar() : JSX.Element{
             }}
           />
         </InputGroup>
-        {userElement}
+        <Box position="relative" zIndex={12}> {/* Wrap userElement with proper z-index */}
+          {userElement}
+        </Box>
       </Container>
     </>
   )
