@@ -63,6 +63,19 @@ public class UserController {
             if (result.hasFieldErrors("email")) {
                 return ResponseEntity.badRequest().body(result.getFieldError("email").getDefaultMessage());
             }
+            if (result.hasFieldErrors("password")) {
+                return ResponseEntity.badRequest().body(result.getFieldError("password").getDefaultMessage());
+            }
+            if (result.hasFieldErrors("reenterPassword")) {
+                return ResponseEntity.badRequest().body(result.getFieldError("reenterPassword").getDefaultMessage());
+            }
+            if (result.hasFieldErrors("displayName")) {
+                return ResponseEntity.badRequest().body(result.getFieldError("displayName").getDefaultMessage());
+            }
+        }
+
+        if (!user.getPassword().equals(user.getReenterPassword())) {
+            return ResponseEntity.badRequest().body("Passwords are not the same.");
         }
 
         try {
@@ -84,7 +97,7 @@ public class UserController {
             String token = map.get("token");
 
             // Create cookie with JWT token
-            Cookie cookie = new Cookie("BCFtoken", token);
+            Cookie cookie = new Cookie("BCourtFindertoken", token);
             cookie.setHttpOnly(true);
             cookie.setMaxAge(86400);
             cookie.setPath("/");
@@ -107,11 +120,18 @@ public class UserController {
     /*
      * Logs out user, immediately expires the cookie
      */
-    @PostMapping("/api/users/logout")
-    public ResponseEntity<Void> logout(HttpServletResponse response) {
-        Cookie cookie = new Cookie("BCFtoken", "");
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        Cookie cookie = new Cookie("BCourtFindertoken", "deleted");
         cookie.setHttpOnly(true);
-        cookie.setSecure(true); // Keep this if using HTTPS
+
+        if (AuthUtil.isLocal(request)) {
+            cookie.setAttribute("SameSite", "Lax");
+            cookie.setSecure(false);
+        } else {
+            cookie.setAttribute("SameSite", "None");
+            cookie.setSecure(true);
+        }
         cookie.setPath("/");
         cookie.setMaxAge(0); // Expire immediately
         response.addCookie(cookie);

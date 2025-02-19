@@ -23,64 +23,63 @@ import java.util.Date;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+  @Value("${jwt.secret}")
+  private String jwtSecret;
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
-        String path = request.getRequestURI();
-        if (path.equals("/api/users/login") || path.equals("/api/users/sign-up")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // Get token from HttpOnly cookie
-        String token = null;
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("BCFtoken".equals(cookie.getName())) {
-                    token = cookie.getValue();
-                    break;
-                }
-            }
-        }
-
-        if (token != null) {
-            try {
-                // Key for verification
-                Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-                Claims claims = Jwts.parserBuilder()
-                        .setSigningKey(key)
-                        .build()
-                        .parseClaimsJws(token)
-                        .getBody();
-
-                // Check for token expiration
-                Date expiration = claims.getExpiration();
-                if (expiration != null && expiration.before(new Date())) {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has expired");
-                    return;
-                }
-
-                // Extract user ID from claims
-                Long userId = claims.get("userID", Long.class);
-                String username = claims.getSubject(); // The email/username
-
-                // Create Authentication token with user ID as principal
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        userId, null, Collections.emptyList());
-
-                // Set the authentication in the security context
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
-            } catch (Exception e) {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
-                return;
-            }
-        }
-
-        filterChain.doFilter(request, response);
+  @Override
+  protected void doFilterInternal(HttpServletRequest request,
+      @NonNull HttpServletResponse response,
+      @NonNull FilterChain filterChain) throws ServletException, IOException {
+    String path = request.getRequestURI();
+    if (path.equals("/api/users/login") || path.equals("/api/users/sign-up")) {
+      filterChain.doFilter(request, response);
+      return;
     }
+
+    // Get token from HttpOnly cookie
+    String token = null;
+    if (request.getCookies() != null) {
+      for (Cookie cookie : request.getCookies()) {
+        if ("BCourtFindertoken".equals(cookie.getName())) {
+          token = cookie.getValue();
+          break;
+        }
+      }
+    }
+
+    if (token != null) {
+      try {
+        // Key for verification
+        Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        Claims claims = Jwts.parserBuilder()
+            .setSigningKey(key)
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
+
+        // Check for token expiration
+        Date expiration = claims.getExpiration();
+        if (expiration != null && expiration.before(new Date())) {
+          response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has expired");
+          return;
+        }
+
+        // Extract user ID from claims
+        Long userId = claims.get("userID", Long.class);
+
+        // Create Authentication token with user ID as principal
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+            userId, null, Collections.emptyList());
+
+        // Set the authentication in the security context
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+      } catch (Exception e) {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+        return;
+      }
+    }
+
+    filterChain.doFilter(request, response);
+  }
 }

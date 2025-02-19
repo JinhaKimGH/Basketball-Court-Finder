@@ -109,15 +109,76 @@ public class UserControllerTest {
                         .contentType("application/json")
                         .content(userJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Invalid email format"));
+                .andExpect(content().string("Invalid email format."));
+    }
+
+    @Test
+    public void testSignUpUser_PasswordValidationError() throws Exception {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setEmail("a@gmail.com");
+        userDTO.setPassword("Password%$");
+        userDTO.setReenterPassword("Password2%$");
+        userDTO.setDisplayName("abca");
+
+        // Convert the User object to JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        String userJson = objectMapper.writeValueAsString(userDTO);
+
+        // Perform request
+        mockMvc.perform(post("/api/users/sign-up")
+                        .contentType("application/json")
+                        .content(userJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Passwords are not the same."));
+    }
+
+    @Test
+    public void testSignUpUser_DisplayNameSizeValidationError() throws Exception {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setEmail("a@gmail.com");
+        userDTO.setPassword("Password%$");
+        userDTO.setReenterPassword("Password%$");
+        userDTO.setDisplayName("a");
+
+        // Convert the User object to JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        String userJson = objectMapper.writeValueAsString(userDTO);
+
+        // Perform request
+        mockMvc.perform(post("/api/users/sign-up")
+                        .contentType("application/json")
+                        .content(userJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Display name must be between 3 and 20 characters."));
+    }
+
+    @Test
+    public void testSignUpUser_DisplayNameStringValidationError() throws Exception {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setEmail("a@gmail.com");
+        userDTO.setPassword("Password%$");
+        userDTO.setReenterPassword("Password%$");
+        userDTO.setDisplayName("a$%$^&$@#$");
+
+        // Convert the User object to JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        String userJson = objectMapper.writeValueAsString(userDTO);
+
+        // Perform request
+        mockMvc.perform(post("/api/users/sign-up")
+                        .contentType("application/json")
+                        .content(userJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Display name can only contain letters, numbers, and spaces."));
     }
 
     @Test
     public void testSignUpUser_Fail() throws Exception {
         UserDTO userDTO = new UserDTO();
         userDTO.setEmail("a@gmail.com");
-        userDTO.setPassword("password");
-        userDTO.setDisplayName("a");
+        userDTO.setPassword("Password2$");
+        userDTO.setReenterPassword("Password2$");
+        userDTO.setDisplayName("abca");
 
         // Convert UserDTO to JSON
         ObjectMapper objectMapper = new ObjectMapper();
@@ -139,8 +200,9 @@ public class UserControllerTest {
     public void testSignUpUser_Success() throws Exception {
         UserDTO userDTO = new UserDTO();
         userDTO.setEmail("a@gmail.com");
-        userDTO.setPassword("password");
-        userDTO.setDisplayName("a");
+        userDTO.setPassword("Password2$");
+        userDTO.setReenterPassword("Password2$");
+        userDTO.setDisplayName("abc");
 
         // Convert UserDTO to JSON
         ObjectMapper objectMapper = new ObjectMapper();
