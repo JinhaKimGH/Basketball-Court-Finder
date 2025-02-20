@@ -4,6 +4,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { useContext, useState } from "react";
 import { LuCircleUserRound, LuLogIn, LuLogOut } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
+import { pickPalette } from "@/utils";
 
 /**
  * SignOut Component
@@ -26,13 +27,6 @@ export default function ProfilePopup(
   const isLoggedIn = authContext.isLoggedIn;
   const displayName = authContext.user?.displayName || "Guest";
   const email = authContext.user?.email || "guest@email.com";
-
-  // Icon Color Palette
-  const colorPalette = ["red", "blue", "green", "yellow", "purple", "orange"];
-  const pickPalette = (name: string) => {
-    const index = name.charCodeAt(0) % colorPalette.length;
-    return colorPalette[index];
-  };
 
   // State to control the visibility of the container
   const [isOpen, setIsOpen] = useState(false);
@@ -93,8 +87,9 @@ export default function ProfilePopup(
               variant="surface"
               rounded="md"
               width="100%" 
+              onClick={() => navigate("/profile")}
             >
-              Manage Your Account
+              Manage Your Profile
             </Button>
             <Button 
               colorPalette="blue"

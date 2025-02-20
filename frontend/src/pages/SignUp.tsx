@@ -7,7 +7,8 @@ import {
     Flex,
     Box,
     Card,
-    Button
+    Button,
+    Link
 } from "@chakra-ui/react";
 import {custom_input as CInput} from "@/components/ui/custom_input";
 import { LuCircleCheckBig } from "react-icons/lu";
@@ -125,113 +126,105 @@ export default function SignUp() : JSX.Element{
       transform={{base: "none", md: "translate(-50%, -50%)"}}
       boxShadow={{base: "none", md: "md"}}
       width={{base: "100%", md: "60%", lg: "400px"}}
-      height={{lg:"500px"}}
+      height={{lg: signedUp ? "230px" : "500px"}}
       border={{base: "none", md: "1px solid"}}
       borderColor={{base: "transparent", md: "gray.200"}}
     >
-      <Card.Header>
-        <Image
-          src="/assets/basket.png"
-          alt="Basket Icon"
-          boxSize="50px"
-          objectFit="cover"
-        />
-        
-      </Card.Header>
+      { !signedUp &&
+        <Card.Header>
+          <Image
+            src="/assets/basket.png"
+            alt="Basket Icon"
+            boxSize="50px"
+            objectFit="cover"
+          />
+        </Card.Header>
+      }
         <Card.Body
           padding="6"
         >
-          <Flex
-            direction="column"
-            justifyContent="space-between"
-            gap={7}
-          >
-            <Heading fontWeight={500} fontSize="3xl" lineHeight={"32px"}>Create an Account!</Heading>
-            <Box
-              width={{base: "100%"}}
+          { signedUp ?
+            <Flex direction="column" justifyContent="center" alignItems="center" gap="3">
+              <LuCircleCheckBig color="#81C784" size="50"/>
+              <Heading textAlign="center" fontSize="18px" fontWeight="400">
+                You have successfully signed up!
+              </Heading>
+              <p>
+                Please proceed with login.
+              </p>
+            </Flex> :
+            <Flex
+              direction="column"
+              justifyContent="space-between"
+              gap={7}
             >
-              <Fieldset.Root size={{base: "sm", md: "lg"}} invalid>
-              <Fieldset.Content>
-                <CInput
-                  name="email"
-                  placeholder="Email"
-                  label="Email"
-                  required
-                  onChange={handleChange}
-                  value={signupData.email}
-                  invalid={errorMessage.includes('Email')}
-                />
+              <Heading fontWeight={500} fontSize="3xl" lineHeight={"32px"}>Create an Account!</Heading>
+              <Box
+                width={{base: "100%"}}
+              >
+                <Fieldset.Root size={{base: "sm", md: "lg"}} invalid>
+                <Fieldset.Content>
+                  <CInput
+                    name="email"
+                    placeholder="Email"
+                    label="Email"
+                    required
+                    onChange={handleChange}
+                    value={signupData.email}
+                    invalid={errorMessage.includes('Email')}
+                  />
 
-                <CInput
-                  name="displayName"
-                  placeholder="Display Name"
-                  label="Display Name"
-                  required
-                  onChange={handleChange}
-                  value={signupData.displayName}
-                  invalid={errorMessage.includes('Display name')}
-                />
+                  <CInput
+                    name="displayName"
+                    placeholder="Display Name"
+                    label="Display Name"
+                    required
+                    onChange={handleChange}
+                    value={signupData.displayName}
+                    invalid={errorMessage.includes('Display name')}
+                  />
 
-                <CInput
-                  name="password"
-                  placeholder="Password"
-                  label="Password"
-                  required
-                  onChange={handleChange}
-                  value={signupData.password}
-                  invalid={errorMessage.includes('Password')}
-                  type="password"
-                />
+                  <CInput
+                    name="password"
+                    placeholder="Password"
+                    label="Password"
+                    required
+                    onChange={handleChange}
+                    value={signupData.password}
+                    invalid={errorMessage.includes('Password')}
+                    type="password"
+                  />
 
-                <CInput
-                  name="reenterPassword"
-                  placeholder="Re-enter Password"
-                  label="Re-enter Password"
-                  required
-                  onChange={handleChange}
-                  value={signupData.reenterPassword}
-                  invalid={errorMessage.includes('Password')}
-                  type="password"
-                />
-              </Fieldset.Content>
-              <Fieldset.ErrorText>
-                {errorMessage}
-              </Fieldset.ErrorText>
-            </Fieldset.Root> 
-            </Box>
-          </Flex>
+                  <CInput
+                    name="reenterPassword"
+                    placeholder="Re-enter Password"
+                    label="Re-enter Password"
+                    required
+                    onChange={handleChange}
+                    value={signupData.reenterPassword}
+                    invalid={errorMessage.includes('Password')}
+                    type="password"
+                  />
+                </Fieldset.Content>
+                <Fieldset.ErrorText>
+                  {errorMessage}
+                </Fieldset.ErrorText>
+              </Fieldset.Root> 
+              </Box>
+            </Flex>
+          }
         </Card.Body>
         <Flex
-          justifyContent={{base: "flex-end"}}
+          justifyContent={{base: "center", md: signedUp ? "center" : "flex-end"}}
           padding="6"
           paddingTop="0"
           gap="6"
         >
-          <Button onClick={handleSignUp} type="submit" loading={isLoading} width="90px">Sign Up</Button>
+          {signedUp ? 
+            <Link href="/log-in" variant="underline">Continue to Login</Link> :
+            <Button onClick={handleSignUp} type="submit" loading={isLoading} width="90px">Sign Up</Button> 
+          }
         </Flex>
     </Card.Root>
-
   )
 }
-
-// {/* :
-//         <Flex direction="column" justifyContent="center" alignItems="center" gap="3">
-//           <LuCircleCheckBig color="#81C784" size="50"/>
-//           <Heading textAlign="center" fontSize="18px" fontWeight="400">
-//             You have successfully signed up!
-//           </Heading>
-//           <p>
-//             Please proceed with login.
-//           </p>
-//         </Flex> 
-//       } 
-//       { !signedUp &&
-//         <Flex
-//           justifyContent="space-between"
-//           padding="5"
-//         >
-//           <Button variant="outline">Cancel</Button>
-//           <Button onClick={handleSignUp} type="submit" loading={isLoading}>Sign Up</Button>
-//         </Flex> 
-//       }
-//     </> */}

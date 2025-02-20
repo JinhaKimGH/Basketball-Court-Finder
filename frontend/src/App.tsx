@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import SearchBar from './components/SearchBar'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
+import ProfileManagement from './pages/ProfileManagement'
 
 export default function App() {
 
@@ -11,6 +12,7 @@ export default function App() {
         <Route path="/" element={<SearchBar/>} />
         <Route path="/log-in" element={<Login/>} />
         <Route path="/sign-up" element={<SignUp/>} />
+        <Route path="/profile" element={<ProfileManagement/>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
