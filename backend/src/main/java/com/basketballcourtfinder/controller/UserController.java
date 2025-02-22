@@ -138,6 +138,120 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/email")
+    public ResponseEntity<String> updateUserEmail(@Valid @RequestBody UserDTO userDTO, BindingResult result) {
+        // Ensures valid email for UserDTO
+        if (result.hasErrors()) {
+            if (result.hasFieldErrors("email")) {
+                return ResponseEntity.badRequest().body(result.getFieldError("email").getDefaultMessage());
+            }
+        }
+
+        // User ID Found from Token
+        Long userId;
+        try {
+            userId = AuthUtil.getAuthenticatedUserId();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+
+        // Updates attribute based on the parameter passed in
+        try {
+            if ((userDTO.getEmail() != null && !userDTO.getEmail().isEmpty())) {
+                service.updateEmail(userId, userDTO.getEmail());
+            }
+
+            else {
+                return ResponseEntity.badRequest().body("Email field must not be null.");
+            }
+
+            return ResponseEntity.ok("User email updated successfully");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            // Exception for when the new update doesn't result in any change
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating user email.");
+        }
+    }
+
+    @PutMapping("/displayName")
+    public ResponseEntity<String> updateUserDisplayName(@Valid @RequestBody UserDTO userDTO, BindingResult result) {
+        // Ensures valid email for UserDTO
+        if (result.hasErrors()) {
+            if (result.hasFieldErrors("displayName")) {
+                return ResponseEntity.badRequest().body(result.getFieldError("displayName").getDefaultMessage());
+            }
+        }
+
+        // User ID Found from Token
+        Long userId;
+        try {
+            userId = AuthUtil.getAuthenticatedUserId();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+
+        // Updates attribute based on the parameter passed in
+        try {
+            if ((userDTO.getDisplayName() != null && !userDTO.getDisplayName().isEmpty())) {
+                service.updateDisplayName(userId, userDTO.getDisplayName());
+            }
+
+            else {
+                return ResponseEntity.badRequest().body("Display name field must not be null.");
+            }
+
+            return ResponseEntity.ok("User display name updated successfully");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            // Exception for when the new update doesn't result in any change
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating user display name.");
+        }
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<String> updateUserPassword(@Valid @RequestBody UserDTO userDTO, BindingResult result) {
+        // Ensures valid email for UserDTO
+        if (result.hasErrors()) {
+            if (result.hasFieldErrors("password")) {
+                return ResponseEntity.badRequest().body(result.getFieldError("password").getDefaultMessage());
+            }
+        }
+
+        // User ID Found from Token
+        Long userId;
+        try {
+            userId = AuthUtil.getAuthenticatedUserId();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+
+        // Updates attribute based on the parameter passed in
+        try {
+            if ((userDTO.getPassword() != null && !userDTO.getPassword().isEmpty())) {
+                service.updatePassword(userId, userDTO.getPassword());
+            }
+
+            else {
+                return ResponseEntity.badRequest().body("Password field must not be null.");
+            }
+
+            return ResponseEntity.ok("User password updated successfully");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            // Exception for when the new update doesn't result in any change
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating user password.");
+        }
+    }
+
     /*
     * Updates the user in the database.
     * */
@@ -148,8 +262,13 @@ public class UserController {
             if (result.hasFieldErrors("email")) {
                 return ResponseEntity.badRequest().body(result.getFieldError("email").getDefaultMessage());
             }
+            if (result.hasFieldErrors("password")) {
+                return ResponseEntity.badRequest().body(result.getFieldError("password").getDefaultMessage());
+            }
+            if (result.hasFieldErrors("displayName")) {
+                return ResponseEntity.badRequest().body(result.getFieldError("displayName").getDefaultMessage());
+            }
         }
-
         // User ID Found from Token
         Long userId;
         try {
@@ -209,5 +328,23 @@ public class UserController {
         }
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<?>  getUserStats() {
+        // User ID Found from Token
+        Long userId;
+        try {
+            userId = AuthUtil.getAuthenticatedUserId();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+
+        try {
+            Map<String, String> map = service.findUserStats(userId);
+            return ResponseEntity.status(HttpStatus.OK).body(map);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }

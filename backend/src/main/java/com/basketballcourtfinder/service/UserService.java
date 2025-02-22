@@ -4,6 +4,7 @@ import com.basketballcourtfinder.dto.UserProjection;
 import com.basketballcourtfinder.entity.User;
 import com.basketballcourtfinder.exceptions.EntityAlreadyExistsException;
 import com.basketballcourtfinder.exceptions.EntityNotFoundException;
+import com.basketballcourtfinder.repository.ReviewRepository;
 import com.basketballcourtfinder.repository.UserRepository;
 import com.basketballcourtfinder.util.PasswordUtils;
 import org.springframework.security.crypto.keygen.KeyGenerators;
@@ -19,10 +20,13 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository repository;
 
+    private final ReviewRepository reviewRepository;
+
     private final PasswordUtils passwordUtils;
 
-    public UserService(UserRepository repository, PasswordUtils passwordUtils) {
+    public UserService(UserRepository repository, ReviewRepository reviewRepository, PasswordUtils passwordUtils) {
         this.repository = repository;
+        this.reviewRepository = reviewRepository;
         this.passwordUtils = passwordUtils;
     }
 
@@ -158,5 +162,17 @@ public class UserService {
 
         user.setDisplayName(displayName);
         repository.save(user);
+    }
+
+    /*
+     * Retrieve user statistics
+     */
+    public Map<String, String> findUserStats(Long userId) {
+        User user = repository.findById(userId).orElseThrow(() -> new EntityNotFoundException("user", userId));
+
+        Map<String, String> map = new HashMap<>();
+        map.put("trust", String.valueOf(user.getTrustScore()));
+        map.put("review_count", String.valueOf(reviewRepository.countByUserId(userId)));
+        return map;
     }
 }
