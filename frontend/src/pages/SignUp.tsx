@@ -163,53 +163,53 @@ export default function SignUp() : JSX.Element{
                 width={{base: "100%"}}
               >
                 <Fieldset.Root size={{base: "sm", md: "lg"}} invalid>
-                <Fieldset.Content>
-                  <CInput
-                    name="email"
-                    placeholder="Email"
-                    label="Email"
-                    required
-                    onChange={handleChange}
-                    value={signupData.email}
-                    invalid={errorMessage.includes('Email')}
-                  />
+                  <Fieldset.Content>
+                    <CInput
+                      name="email"
+                      placeholder="Email"
+                      label="Email"
+                      required
+                      onChange={handleChange}
+                      value={signupData.email}
+                      invalid={errorMessage.includes('Email')}
+                    />
 
-                  <CInput
-                    name="displayName"
-                    placeholder="Display Name"
-                    label="Display Name"
-                    required
-                    onChange={handleChange}
-                    value={signupData.displayName}
-                    invalid={errorMessage.includes('Display name')}
-                  />
+                    <CInput
+                      name="displayName"
+                      placeholder="Display Name"
+                      label="Display Name"
+                      required
+                      onChange={handleChange}
+                      value={signupData.displayName}
+                      invalid={errorMessage.includes('Display name')}
+                    />
 
-                  <CInput
-                    name="password"
-                    placeholder="Password"
-                    label="Password"
-                    required
-                    onChange={handleChange}
-                    value={signupData.password}
-                    invalid={errorMessage.includes('Password')}
-                    type="password"
-                  />
+                    <CInput
+                      name="password"
+                      placeholder="Password"
+                      label="Password"
+                      required
+                      onChange={handleChange}
+                      value={signupData.password}
+                      invalid={errorMessage.includes('Password')}
+                      type="password"
+                    />
 
-                  <CInput
-                    name="reenterPassword"
-                    placeholder="Re-enter Password"
-                    label="Re-enter Password"
-                    required
-                    onChange={handleChange}
-                    value={signupData.reenterPassword}
-                    invalid={errorMessage.includes('Password')}
-                    type="password"
-                  />
-                </Fieldset.Content>
-                <Fieldset.ErrorText>
-                  {errorMessage}
-                </Fieldset.ErrorText>
-              </Fieldset.Root> 
+                    <CInput
+                      name="reenterPassword"
+                      placeholder="Re-enter Password"
+                      label="Re-enter Password"
+                      required
+                      onChange={handleChange}
+                      value={signupData.reenterPassword}
+                      invalid={errorMessage.includes('Password')}
+                      type="password"
+                    />
+                  </Fieldset.Content>
+                  <Fieldset.ErrorText>
+                    {errorMessage}
+                  </Fieldset.ErrorText>
+                </Fieldset.Root> 
               </Box>
             </Flex>
           }

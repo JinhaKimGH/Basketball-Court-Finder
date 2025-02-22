@@ -7,7 +7,7 @@ interface User {
     email: string,
 }
 
-interface AuthState {
+export interface AuthState {
     isLoggedIn: boolean;
     user: User | null;
 }
@@ -15,7 +15,7 @@ interface AuthState {
 interface AuthContextType extends AuthState {
     checkAuth: () => Promise<void>;
     logout: () => void;
-    setAuthState: (newState: AuthState) => void;
+    setAuthState: (newState: AuthState | ((prevState: AuthState) => AuthState)) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | null> (null);
@@ -29,40 +29,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Checks authentication status
     const checkAuth = async () => {
-        fetch(`${baseApiUrl}/api/users`, {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0',
-                'Authorization': `Bearer ${sessionStorage.getItem("BCFtoken")}`
-            }
-        }).then(
-            (res) => {
-              if (res.ok) {
-                return res.json().then(data => {
-                  setAuthState({isLoggedIn: true, user: data});
-                });
-              } else {
-                setAuthState({isLoggedIn: false, user: null});
-              }
-            }
-        ).catch((error) => {
-            console.error("Error checking auth: ", error);
+      fetch(`${baseApiUrl}/api/users`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'Authorization': `Bearer ${sessionStorage.getItem("BCFtoken")}`
+        }
+      }).then(
+        (res) => {
+          if (res.ok) {
+            return res.json().then(data => {
+              setAuthState({isLoggedIn: true, user: data});
+            });
+          } else {
             setAuthState({isLoggedIn: false, user: null});
-            // TODO: Replace with logging later
-        });
+          }
+        }
+      ).catch((error) => {
+        console.error("Error checking auth: ", error);
+        setAuthState({isLoggedIn: false, user: null});
+        // TODO: Replace with logging later
+      });
     }
 
     // Logout function
     const logout = async () => {
       fetch(`${baseApiUrl}/api/users/logout`, {
-          method: "POST",
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
       }).then(
         (res) => {
           if (res.ok) {

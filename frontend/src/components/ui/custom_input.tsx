@@ -8,7 +8,8 @@ export const custom_input = (props: {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
   value: string,
   invalid: boolean,
-  type?: string
+  type?: string,
+  disabled?: boolean,
 }) => {
   return (
     <Field.Root invalid={props.invalid} required={props.required}>
@@ -20,11 +21,17 @@ export const custom_input = (props: {
           value={props.value}
           onChange={props.onChange}
           type={props.type}
+          disabled={props.disabled}
         />
         <Field.Label css={floatingStyles}>{props.label}</Field.Label>
       </Box>
     </Field.Root>
   )
+}
+
+custom_input.defaultProps = {
+  disabled: false,
+  required: false,
 }
 
 const floatingStyles = defineStyle({
