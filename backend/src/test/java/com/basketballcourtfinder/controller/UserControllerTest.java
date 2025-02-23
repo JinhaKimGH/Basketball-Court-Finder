@@ -99,6 +99,9 @@ public class UserControllerTest {
     public void testSignUpUser_EmailValidationError() throws Exception {
         UserDTO userDTO = new UserDTO();
         userDTO.setEmail("invalid_mail");
+        userDTO.setDisplayName("invalid");
+        userDTO.setPassword("Abcdefghi123$");
+        userDTO.setReenterPassword("Abcdefghi123$");
 
         // Convert the User object to JSON
         ObjectMapper objectMapper = new ObjectMapper();
@@ -116,7 +119,7 @@ public class UserControllerTest {
     public void testSignUpUser_PasswordValidationError() throws Exception {
         UserDTO userDTO = new UserDTO();
         userDTO.setEmail("a@gmail.com");
-        userDTO.setPassword("Password%$");
+        userDTO.setPassword("Password3%$");
         userDTO.setReenterPassword("Password2%$");
         userDTO.setDisplayName("abca");
 
@@ -136,8 +139,8 @@ public class UserControllerTest {
     public void testSignUpUser_DisplayNameSizeValidationError() throws Exception {
         UserDTO userDTO = new UserDTO();
         userDTO.setEmail("a@gmail.com");
-        userDTO.setPassword("Password%$");
-        userDTO.setReenterPassword("Password%$");
+        userDTO.setPassword("Password2%$");
+        userDTO.setReenterPassword("Password2%$");
         userDTO.setDisplayName("a");
 
         // Convert the User object to JSON
@@ -156,8 +159,8 @@ public class UserControllerTest {
     public void testSignUpUser_DisplayNameStringValidationError() throws Exception {
         UserDTO userDTO = new UserDTO();
         userDTO.setEmail("a@gmail.com");
-        userDTO.setPassword("Password%$");
-        userDTO.setReenterPassword("Password%$");
+        userDTO.setPassword("Password2%$");
+        userDTO.setReenterPassword("Password2%$");
         userDTO.setDisplayName("a$%$^&$@#$");
 
         // Convert the User object to JSON
@@ -277,15 +280,15 @@ public class UserControllerTest {
         String userJson = objectMapper.writeValueAsString(userDTO);
 
         // Perform request
-        mockMvc.perform(put("/api/users")
+        mockMvc.perform(put("/api/users/email")
                         .contentType("application/json")
                         .content(userJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Invalid email format"));
+                .andExpect(content().string("Invalid email format."));
     }
 
     @Test
-    public void testUpdateUser_Success() throws Exception {
+    public void testUpdateUserEmail_Success() throws Exception {
         // Sets up authentication and security context holder
         setup_authUser();
 
@@ -302,11 +305,61 @@ public class UserControllerTest {
         doNothing().when(service).updateEmail(mockUserId, userDTO.getEmail());
 
         // Perform request
-        mockMvc.perform(put("/api/users")
+        mockMvc.perform(put("/api/users/email")
                         .contentType("application/json")
                         .content(userJson))
                 .andExpect(status().isOk())
-                .andExpect(content().string("User updated successfully"));
+                .andExpect(content().string("User email updated successfully"));
+    }
+
+    @Test
+    public void testUpdateUserDisplayName_Success() throws Exception {
+        // Sets up authentication and security context holder
+        setup_authUser();
+
+        UserDTO userDTO = new UserDTO();
+        userDTO.setDisplayName("abc1234");
+
+        // Convert the User object to JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        String userJson = objectMapper.writeValueAsString(userDTO);
+
+        Long mockUserId = 1L;
+
+        // Mock Service
+        doNothing().when(service).updateEmail(mockUserId, userDTO.getEmail());
+
+        // Perform request
+        mockMvc.perform(put("/api/users/displayName")
+                        .contentType("application/json")
+                        .content(userJson))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User display name updated successfully"));
+    }
+
+    @Test
+    public void testUpdateUserPassword_Success() throws Exception {
+        // Sets up authentication and security context holder
+        setup_authUser();
+
+        UserDTO userDTO = new UserDTO();
+        userDTO.setPassword("Abc1234$");
+
+        // Convert the User object to JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        String userJson = objectMapper.writeValueAsString(userDTO);
+
+        Long mockUserId = 1L;
+
+        // Mock Service
+        doNothing().when(service).updateEmail(mockUserId, userDTO.getEmail());
+
+        // Perform request
+        mockMvc.perform(put("/api/users/password")
+                        .contentType("application/json")
+                        .content(userJson))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User password updated successfully"));
     }
 
     @Test
@@ -321,11 +374,11 @@ public class UserControllerTest {
         String userJson = objectMapper.writeValueAsString(userDTO);
 
         // Perform request
-        mockMvc.perform(put("/api/users")
+        mockMvc.perform(put("/api/users/email")
                         .contentType("application/json")
                         .content(userJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("At least one field must not be null."));
+                .andExpect(content().string("Email is required."));
     }
 
     @Test
@@ -346,7 +399,7 @@ public class UserControllerTest {
         doThrow(new EntityNotFoundException("user", mockUserId)).when(service).updateEmail(mockUserId, userDTO.getEmail());
 
         // Perform request
-        mockMvc.perform(put("/api/users")
+        mockMvc.perform(put("/api/users/email")
                         .contentType("application/json")
                         .content(userJson))
                 .andExpect(status().isNotFound())

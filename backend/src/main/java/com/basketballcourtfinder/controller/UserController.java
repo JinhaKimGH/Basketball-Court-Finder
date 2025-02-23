@@ -253,63 +253,6 @@ public class UserController {
     }
 
     /*
-    * Updates the user in the database.
-    * */
-    @PutMapping()
-    public ResponseEntity<String> updateUser(@Valid @RequestBody UserDTO userDTO, BindingResult result) {
-        // Ensures valid email for UserDTO
-        if (result.hasErrors()) {
-            if (result.hasFieldErrors("email")) {
-                return ResponseEntity.badRequest().body(result.getFieldError("email").getDefaultMessage());
-            }
-            if (result.hasFieldErrors("password")) {
-                return ResponseEntity.badRequest().body(result.getFieldError("password").getDefaultMessage());
-            }
-            if (result.hasFieldErrors("displayName")) {
-                return ResponseEntity.badRequest().body(result.getFieldError("displayName").getDefaultMessage());
-            }
-        }
-        // User ID Found from Token
-        Long userId;
-        try {
-            userId = AuthUtil.getAuthenticatedUserId();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
-
-        // Updates attribute based on the parameter passed in
-        try {
-            if ((userDTO.getEmail() != null && !userDTO.getEmail().isEmpty())  |
-                   (userDTO.getDisplayName() != null && !userDTO.getDisplayName().isEmpty()) |
-                   (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty())) {
-                if (userDTO.getEmail() != null && !userDTO.getEmail().isEmpty()) {
-                    service.updateEmail(userId, userDTO.getEmail());
-                }
-                if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-                    service.updatePassword(userId, userDTO.getPassword());
-                }
-                if (userDTO.getDisplayName() != null && !userDTO.getDisplayName().isEmpty()) {
-                    service.updateDisplayName(userId, userDTO.getDisplayName());
-                }
-            }
-
-            else {
-                return ResponseEntity.badRequest().body("At least one field must not be null.");
-            }
-
-            return ResponseEntity.ok("User updated successfully");
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            // Exception for when the new update doesn't result in any change
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating user");
-        }
-
-    }
-
-    /*
     * Deletes the user from the database.
     * */
     @DeleteMapping()
