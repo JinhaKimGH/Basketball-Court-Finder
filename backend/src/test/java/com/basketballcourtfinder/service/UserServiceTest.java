@@ -4,6 +4,7 @@ import com.basketballcourtfinder.dto.UserProjection;
 import com.basketballcourtfinder.entity.User;
 import com.basketballcourtfinder.exceptions.EntityAlreadyExistsException;
 import com.basketballcourtfinder.exceptions.EntityNotFoundException;
+import com.basketballcourtfinder.repository.ReviewRepository;
 import com.basketballcourtfinder.repository.UserRepository;
 import com.basketballcourtfinder.util.PasswordUtils;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,6 +31,9 @@ public class UserServiceTest {
 
     @MockitoBean
     private UserRepository repository;
+
+    @MockitoBean
+    private ReviewRepository reviewRepository;
 
     @MockitoBean
     private PasswordUtils passwordUtils;
@@ -298,5 +303,38 @@ public class UserServiceTest {
         });
 
         assertEquals(exception.getMessage(), "The new display name must be different from the current display name.");
+    }
+
+    @Test
+    public void test_findUserStats_success() {
+        long mock_userId = 1L;
+
+        User mockUser = new User();
+        mockUser.setId(mock_userId);
+        mockUser.setUpvoteCount(10);
+
+        Map<String, String> expectedMap = new HashMap<>();
+        expectedMap.put("trust", "100.0");
+        expectedMap.put("review_count", "10");
+
+        when(repository.findById(mock_userId)).thenReturn(Optional.of(mockUser));
+        when(reviewRepository.countByUserId(mock_userId)).thenReturn(10L);
+
+        Map<String, String> actualMap = service.findUserStats(mock_userId);
+
+        assertEquals(expectedMap, actualMap);
+    }
+
+    @Test
+    public void test_findUserStats_fail() {
+        long mock_userId = 1L;
+
+        when(repository.findById(mock_userId)).thenThrow(new EntityNotFoundException("user", mock_userId));
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+            service.findUserStats(mock_userId);
+        });
+
+        assertEquals(exception.getMessage(), "user with ID 1 not found");
     }
 }

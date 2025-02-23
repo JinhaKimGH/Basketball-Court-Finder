@@ -437,4 +437,41 @@ public class UserControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("User not found"));
     }
+
+    @Test
+    public void testGetUserStats_Fail() throws Exception {
+        mockMvc.perform(get("/api/users/stats"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string("User is not authenticated"));
+    }
+
+    @Test
+    public void testGetUserStats_NotFound() throws Exception {
+        // Sets up authentication and security context holder
+        setup_authUser();
+
+        long mockUserId = 1L;
+
+        when(service.findUserStats(mockUserId)).thenThrow(new EntityNotFoundException("user", mockUserId));
+        mockMvc.perform(get("/api/users/stats"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("user with ID 1 not found"));
+    }
+
+    @Test
+    public void testGetUserStats_Success() throws Exception {
+        // Sets up authentication and security context holder
+        setup_authUser();
+
+        long mockUserId = 1L;
+        Map<String, String> map = new HashMap<>();
+        map.put("trust", "1.0");
+        map.put("review_count", "10");
+
+        when(service.findUserStats(mockUserId)).thenReturn(map);
+        mockMvc.perform(get("/api/users/stats"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.trust").value("1.0"))
+                .andExpect(jsonPath("$.review_count").value("10"));
+    }
 }
