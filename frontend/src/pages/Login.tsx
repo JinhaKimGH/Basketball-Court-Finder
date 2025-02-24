@@ -8,7 +8,7 @@ import {
   Box, 
   Link,
 } from "@chakra-ui/react";
-import {custom_input as Input} from "@/components/ui/custom_input";
+import {CustomInput as Input} from "@/components/ui/custom_input";
 import { validateEmail } from "../utils";
 import React, {useContext} from "react";
 import { AuthContext } from "@/context/AuthContext";
@@ -149,7 +149,7 @@ export default function Login() : JSX.Element{
             width={{base: "100%", md: "100%", lg: "60%"}}
           >
             <Fieldset.Root size={{base: "sm", md: "lg"}} invalid>
-              <Fieldset.Content>
+              <Fieldset.Content gap={5}>
                 <Input
                   name="email"
                   placeholder="Email"

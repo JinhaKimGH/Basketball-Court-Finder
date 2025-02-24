@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { LuCheck, LuPencil } from "react-icons/lu";
 import { Button, DataList, Flex, Text } from "@chakra-ui/react";
-import { custom_input as CInput } from "./ui/custom_input";
+import { CustomInput as CInput } from "./ui/custom_input";
 import { validateEmail } from "@/utils";
 import { AuthState } from "@/context/AuthContext";
 import { AuthContext } from "@/context/AuthContext";

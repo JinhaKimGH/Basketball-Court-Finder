@@ -10,7 +10,7 @@ import {
     Button,
     Link
 } from "@chakra-ui/react";
-import {custom_input as CInput} from "@/components/ui/custom_input";
+import {CustomInput as CInput} from "@/components/ui/custom_input";
 import { LuCircleCheckBig } from "react-icons/lu";
 
 /**
@@ -163,7 +163,7 @@ export default function SignUp() : JSX.Element{
                 width={{base: "100%"}}
               >
                 <Fieldset.Root size={{base: "sm", md: "lg"}} invalid>
-                  <Fieldset.Content>
+                  <Fieldset.Content gap={5}>
                     <CInput
                       name="email"
                       placeholder="Email"
