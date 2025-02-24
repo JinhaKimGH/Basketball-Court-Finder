@@ -7,6 +7,7 @@ import { pickPalette, trustSymbol } from "@/utils";
 import ProfileEdit from "@/components/ProfileEdit";
 import { LuChartLine, LuUserRound, LuUserRoundPen, LuUserRoundX, LuMail, LuTally5 } from "react-icons/lu";
 import { InfoTip } from "@/components/ui/toggle-tip";
+import ProfileDeletion from "@/components/ProfileDeletion";
 
 export default function ProfileManagement() : JSX.Element {
 
@@ -88,7 +89,7 @@ export default function ProfileManagement() : JSX.Element {
         </Flex>
       </Card.Header>
       <Card.Body>
-        <Tabs.Root defaultValue="stats" variant={"outline"}>
+        <Tabs.Root defaultValue="stats" variant={"outline"} height="100%">
           <Tabs.List>
             <Tabs.Trigger value="stats">
               <LuChartLine/>
@@ -147,8 +148,8 @@ export default function ProfileManagement() : JSX.Element {
           <Tabs.Content value="edit" marginTop={4}>
             <ProfileEdit displayName={displayName} email={email}/>
           </Tabs.Content>
-          <Tabs.Content value="delete">
-            Delete Profile
+          <Tabs.Content value="delete" height="90%">
+            <ProfileDeletion/>
           </Tabs.Content>
         </Tabs.Root>
       </Card.Body>
