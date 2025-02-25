@@ -1,6 +1,7 @@
 import { Popover as ChakraPopover, IconButton, Portal } from "@chakra-ui/react"
 import * as React from "react"
 import { HiOutlineInformationCircle } from "react-icons/hi"
+import PropTypes from "prop-types"
 
 export interface ToggleTipProps extends ChakraPopover.RootProps {
   showArrow?: boolean
@@ -10,7 +11,7 @@ export interface ToggleTipProps extends ChakraPopover.RootProps {
 }
 
 export const ToggleTip = React.forwardRef<HTMLDivElement, ToggleTipProps>(
-  function ToggleTip(props, ref) {
+  function ToggleTip(props: ToggleTipProps, ref) {
     const {
       showArrow,
       children,
@@ -68,3 +69,7 @@ export const InfoTip = React.forwardRef<
     </ToggleTip>
   )
 })
+
+InfoTip.propTypes = {
+  children: PropTypes.node as PropTypes.Validator<React.ReactNode>,
+}

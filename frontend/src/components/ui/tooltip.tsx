@@ -11,7 +11,7 @@ export interface TooltipProps extends ChakraTooltip.RootProps {
 }
 
 export const Tooltip = React.forwardRef<HTMLDivElement, TooltipProps>(
-  function Tooltip(props, ref) {
+  function Tooltip(props : TooltipProps, ref) {
     const {
       showArrow,
       children,

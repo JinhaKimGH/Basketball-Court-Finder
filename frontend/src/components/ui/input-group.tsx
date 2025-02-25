@@ -13,7 +13,7 @@ export interface InputGroupProps extends BoxProps {
 }
 
 export const InputGroup = React.forwardRef<HTMLDivElement, InputGroupProps>(
-  function InputGroup(props, ref) {
+  function InputGroup(props: InputGroupProps, ref) {
     const {
       startElement,
       startElementProps,
