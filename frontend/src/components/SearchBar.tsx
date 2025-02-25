@@ -80,6 +80,7 @@ export default function SearchBar() : JSX.Element{
             _focus={{
               borderWidth: "0px",
             }}
+            backgroundColor={"white"}
           />
         </InputGroup>
         <Box position="relative" zIndex={12}> {/* Wrap userElement with proper z-index */}
