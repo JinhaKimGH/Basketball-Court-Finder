@@ -1,12 +1,15 @@
 import { MapContainer, TileLayer, Marker, ZoomControl } from 'react-leaflet';
 import L, { LatLngBoundsExpression, LatLngTuple } from 'leaflet'
 import 'leaflet/dist/leaflet.css';
-import React from 'react'
 import { Box } from '@chakra-ui/react';
+import React from 'react';
 
-export default function Map() : JSX.Element {
-  // Coordinates that the map is centered on
-  const [mapCenter, setMapCenter] = React.useState<LatLngTuple>([43.65, -79.3832]);
+export default function Map(
+  props: {
+    coordinates: LatLngTuple
+  }
+) : JSX.Element {
+  const [key, setKey] = React.useState(0); // Key property to force map container update
 
   // World boundaries in [south, west, north, east] format
   const worldBounds: LatLngBoundsExpression = [
@@ -14,8 +17,12 @@ export default function Map() : JSX.Element {
     [90, 180]    // Northeast coordinates
   ];
   
-  const defaultZoom = 12; // The zoom level of the map
+  const defaultZoom = 17; // The zoom level of the map
   const minZoom = 4; // The minimum zoom level of the map
+
+  React.useEffect(() => {
+    setKey(prevKey => prevKey + 1);
+  }, [props.coordinates])
 
   return (
     <Box
@@ -32,7 +39,8 @@ export default function Map() : JSX.Element {
       overflow="hidden"
     >
       <MapContainer 
-        center={mapCenter} 
+        key={key}
+        center={props.coordinates} 
         minZoom={minZoom}
         zoom={defaultZoom} 
         maxBounds={worldBounds}
