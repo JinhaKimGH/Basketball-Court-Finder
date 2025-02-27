@@ -10,6 +10,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.Thread.sleep;
+
 @Service
 public class BasketballCourtService {
     private final BasketballCourtRepository repository;
@@ -44,6 +46,11 @@ public class BasketballCourtService {
 
                 if (court.getAddress().isIncomplete()) {
                     court.setAddress(getAddressDetails(court.getLat(), court.getLon()));
+                    try {
+                        sleep(1100); // sleep to prevent going over Nominatim's rate limit (1 request per second)
+                    } catch (InterruptedException e) {
+                        System.out.println("Error sleeping during nominatim request");
+                    }
                 }
             }
 
