@@ -83,10 +83,8 @@ export default function ProfileDeletion() {
       >
         <Checkbox 
           variant="subtle"
-          inputProps={{
-            checked: isChecked,
-            onChange: () => setIsChecked(prev => !prev) // Toggle checkbox state
-          }}
+          checked={isChecked}
+          onChange={() => setIsChecked(prev => !prev)} // Toggle checkbox state
         >
           I understand & confirm.
         </Checkbox>

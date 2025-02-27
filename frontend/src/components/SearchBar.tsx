@@ -33,14 +33,14 @@ export default function SearchBar(
   };
 
   // Calculates the latitude/longitude of the user's location on submit
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!location) {
       return;
     }
 
     setIsLoading(true);
-    await fetch(`https://nominatim.openstreetmap.org/search?q=${location}&format=json&limit=1`, {
+    fetch(`https://nominatim.openstreetmap.org/search?q=${location}&format=json&limit=1`, {
       method: 'GET',
       headers: {
         Referer: 'https://jinhakimgh.github.io/Basketball-Court-Finder',

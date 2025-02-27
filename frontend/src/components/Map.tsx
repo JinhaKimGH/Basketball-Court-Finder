@@ -3,10 +3,18 @@ import L, { LatLngBoundsExpression, LatLngTuple } from 'leaflet'
 import 'leaflet/dist/leaflet.css';
 import { Box } from '@chakra-ui/react';
 import React from 'react';
+import { BasketballCourt } from '@/interfaces';
+
+const redMarker = L.icon({
+  iconUrl: './assets/red-map-marker.png',
+  iconSize: [30, 30],
+  iconAnchor: [12, 41],
+})
 
 export default function Map(
   props: {
-    coordinates: LatLngTuple
+    coordinates: LatLngTuple,
+    courts: Array<BasketballCourt>
   }
 ) : JSX.Element {
   const [key, setKey] = React.useState(0); // Key property to force map container update
@@ -17,7 +25,7 @@ export default function Map(
     [90, 180]    // Northeast coordinates
   ];
   
-  const defaultZoom = 17; // The zoom level of the map
+  const defaultZoom = 16; // The zoom level of the map
   const minZoom = 4; // The minimum zoom level of the map
 
   React.useEffect(() => {
@@ -60,6 +68,11 @@ export default function Map(
           noWrap={true}
         />
         <ZoomControl position="bottomright" />
+        {
+          props.courts.map((pin) => (
+            <Marker key={pin.id} position={[pin.lat, pin.lon]} icon={redMarker}/>
+          ))
+        }
       </MapContainer>
     </Box>
   )

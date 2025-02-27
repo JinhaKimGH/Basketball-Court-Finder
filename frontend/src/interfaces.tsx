@@ -1,3 +1,12 @@
+export interface Address {
+  house_number: string,
+  street: string,
+  city: string,
+  state: string,
+  country: string,
+  postal_code: string,
+}
+
 export interface BasketballCourt {
     id: number,
     lat: number,
@@ -5,7 +14,12 @@ export interface BasketballCourt {
     name: string,
     hoops: number,
     surface: string,
-    address: string
+    address: Address,
+    amenity: string,
+    website: string,
+    leisure: string,
+    opening_hours: string,
+    phone: string,
 }
 
 export interface BackendResponse {
