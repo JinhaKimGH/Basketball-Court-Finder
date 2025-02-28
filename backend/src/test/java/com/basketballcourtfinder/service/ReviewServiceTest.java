@@ -449,4 +449,42 @@ public class ReviewServiceTest {
 
         verify(reviewRepository, never()).deleteById(anyLong());
     }
+
+    @Test
+    public void testGetCourtRating_MultipleRatings() {
+        // Mock data
+        Long courtId = 123L;
+
+        Review review1 = new Review();
+        review1.setReviewId(1L);
+        review1.setBody("Great court!");
+        review1.setTitle("Amazing Experience");
+        review1.setEdited(false);
+        review1.setRating(5);
+        review1.setVoteCount(10);
+        review1.setCreatedAt(new Date());
+
+        Review review2 = new Review();
+        review2.setReviewId(2L);
+        review2.setBody("Needs maintenance");
+        review2.setTitle("Average");
+        review2.setEdited(false);
+        review2.setRating(3);
+        review2.setVoteCount(5);
+        review2.setCreatedAt(new Date());
+
+        when(reviewRepository.findByCourtId(courtId)).thenReturn(List.of(review1, review2));
+
+        assert(reviewService.getCourtRating(courtId) == 4.0);
+    }
+
+    @Test
+    public void testGetCourtRating_NoRatings() {
+        // Mock data
+        Long courtId = 123L;
+
+        when(reviewRepository.findByCourtId(courtId)).thenReturn(List.of());
+
+        assert(reviewService.getCourtRating(courtId) == 0.0);
+    }
 }

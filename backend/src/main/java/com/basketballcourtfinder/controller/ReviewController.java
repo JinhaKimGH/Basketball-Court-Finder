@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -17,6 +18,12 @@ public class ReviewController {
 
     public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
+    }
+
+    @GetMapping("/rating")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> getCourtRating(@RequestParam Long courtId) {
+        return ResponseEntity.ok(Collections.singletonMap("rating", reviewService.getCourtRating(courtId)));
     }
 
     @GetMapping

@@ -29,6 +29,12 @@ public class ReviewService {
         this.courtService = courtService;
     }
 
+    public double getCourtRating(Long courtId) {
+        return reviewRepository.findByCourtId(courtId).stream()
+                .mapToInt(Review::getRating)
+                .average().orElse(0.0);
+    }
+
     public List<ReviewResponseDTO> findCourtReviews(Long courtId, Long userId) {
         List<Review> reviews = reviewRepository.findByCourtId(courtId);
 

@@ -377,4 +377,16 @@ public class ReviewControllerTest {
                 .andExpect(content().string("Invalid request"));
     }
 
+    @Test
+    public void testRatingRetrieval() throws Exception {
+        setup_authUser();
+        Long mockCourtId = 1L;
+        when(reviewService.getCourtRating(mockCourtId)).thenReturn(5.0);
+
+        mockMvc.perform(get("/api/review/rating")
+                .param("courtId", String.valueOf(mockCourtId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("rating").value(5));
+    }
+
 }
