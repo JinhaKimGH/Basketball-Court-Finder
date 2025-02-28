@@ -9,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Map;
 import java.util.Objects;
 
 @Entity
@@ -68,7 +67,5 @@ public class BasketballCourt {
         this.id = id;
         this.name = name;
     }
-
-    public void setAddress(Map<String, String> map ) { this.address = new Address(map); }
 }
 

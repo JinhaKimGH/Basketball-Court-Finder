@@ -12,7 +12,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.client.MockRestServiceServer;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -30,9 +29,6 @@ public class BasketballCourtServiceTest {
 
         @MockitoBean
         private BasketballCourtRepository repository;
-
-        @MockitoBean
-        private Map<String, Map<String, String>> addressCache;
 
         @Autowired
         private MockRestServiceServer server;
@@ -82,34 +78,6 @@ public class BasketballCourtServiceTest {
                 // returned
                 assertNotNull(court); // Ensure the court is not null
                 assertEquals("Test Court", court.getName()); // Ensure the court name is correctly mapped
-        }
-
-        @Test
-        public void test_getAddressDetails() throws Exception {
-                double lat = 1;
-                double lon = 2;
-
-                // Mock Address cache
-                when(addressCache.containsKey(lat + "," + lon)).thenReturn(false);
-
-                // Mocking response from the API
-                String mockResponseJson = "{ \"address\": { \"addr:housenumber\": \"Test Street\", \"addr:city\":  " +
-                                "\"Test City\", \"addr:street\": \"Test Street\", \"addr:postcode\": \"12345\"}}";
-
-                // Mocking the response from RestClient API
-                this.server.expect(requestTo(String.format(
-                                "https://nominatim.openstreetmap.org/reverse?lat=%f&lon=%f&format=json&addressdetails=1",
-                                lat, lon)))
-                                .andRespond(withStatus(HttpStatus.OK)
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .body(mockResponseJson));
-
-                Map<String, String> address = service.getAddressDetails(lat, lon);
-
-                // Verifying that the response is not null and the expected postal code is
-                // returned
-                assertNotNull(address); // Ensure the address is not null
-                assertEquals("12345", address.get("addr:postcode"));
         }
 
         @Test

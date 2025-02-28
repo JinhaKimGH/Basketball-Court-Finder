@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Map;
 import java.util.Objects;
 
 @Embeddable
@@ -20,15 +19,6 @@ public class Address {
     private String state;
     private String country;
     private String postal_code;
-
-    public Address(Map<String, String> map) {
-        this.house_number = map.getOrDefault("house_number", "");
-        this.street = map.getOrDefault("road", "");
-        this.city = map.getOrDefault("city", "");
-        this.state = map.getOrDefault("state", "");
-        this.country = map.getOrDefault("country", "");
-        this.postal_code = map.getOrDefault("postcode", "");
-    }
 
     public Address(OverpassResponse.Element element) {
         this.house_number = element.getTag("addr:housenumber");
