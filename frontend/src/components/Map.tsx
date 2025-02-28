@@ -5,10 +5,10 @@ import { Box } from '@chakra-ui/react';
 import React from 'react';
 import { BasketballCourt } from '@/interfaces';
 
-const redMarker = L.icon({
-  iconUrl: './assets/red-map-marker.png',
-  iconSize: [30, 30],
-  iconAnchor: [12, 41],
+const marker = L.icon({
+  iconUrl: './assets/pin.png',
+  iconSize: [60, 60],
+  iconAnchor: [30,60],
 })
 
 export default function Map(
@@ -70,7 +70,7 @@ export default function Map(
         <ZoomControl position="bottomright" />
         {
           props.courts.map((pin) => (
-            <Marker key={pin.id} position={[pin.lat, pin.lon]} icon={redMarker}/>
+            <Marker key={pin.id} position={[pin.lat, pin.lon]} icon={marker}/>
           ))
         }
       </MapContainer>

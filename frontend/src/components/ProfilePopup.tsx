@@ -40,7 +40,7 @@ export default function ProfilePopup(
         <Box onClick={handleToggle} cursor="pointer">
           {
             isLoggedIn ? 
-            <Avatar.Root colorPalette={pickPalette(displayName)}>
+            <Avatar.Root colorPalette={pickPalette(displayName)} size={{base: "xs", lg: "md"}}>
               <Avatar.Fallback name={displayName} tabIndex={0} />
             </Avatar.Root>
             :
