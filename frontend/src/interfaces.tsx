@@ -5,6 +5,7 @@ export interface Address {
   state: string,
   country: string,
   postal_code: string,
+  incomplete: boolean,
 }
 
 export interface BasketballCourt {

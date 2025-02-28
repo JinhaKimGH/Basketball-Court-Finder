@@ -1,3 +1,4 @@
+import CourtCard from "@/components/CourtCard";
 import Map from "@/components/Map";
 import SearchBar from "@/components/SearchBar";
 import { BasketballCourt } from "@/interfaces";
@@ -41,6 +42,28 @@ export default function Home() {
     <>
       <SearchBar setCoordinates={setMapCenter}/>
       <Map coordinates={mapCenter} courts={courts}/>
+      <CourtCard court={{
+          id: 12,
+          lat: 43.65,
+          lon: -79.3832,
+          name: "Test Court",
+          hoops: 2,
+          surface: "Pavement",
+          address: {
+            house_number: "123",
+            street: "street",
+            city: "Toronto",
+            state: "Ontario",
+            country: "Canada",
+            postal_code: "ZZZ 123",
+            incomplete: false,
+          },
+          amenity: "Park",
+          website: "www.google.com",
+          leisure: "pitch",
+          opening_hours: "Mo-Fr 07:30-22:00 Sa 09:00-23:00 Su 10:00-18:00",
+          phone: "",
+      }}/>
     </>
   )
 }
