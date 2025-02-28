@@ -18,9 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -381,12 +379,15 @@ public class ReviewControllerTest {
     public void testRatingRetrieval() throws Exception {
         setup_authUser();
         Long mockCourtId = 1L;
-        when(reviewService.getCourtRating(mockCourtId)).thenReturn(5.0);
+        Map map = Map.of("rating", 5.0, "reviews", 1);
+
+        when(reviewService.getCourtRating(mockCourtId)).thenReturn(map);
 
         mockMvc.perform(get("/api/review/rating")
                 .param("courtId", String.valueOf(mockCourtId)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("rating").value(5));
+                .andExpect(jsonPath("rating").value(5))
+                .andExpect(jsonPath("reviews").value(1));
     }
 
 }

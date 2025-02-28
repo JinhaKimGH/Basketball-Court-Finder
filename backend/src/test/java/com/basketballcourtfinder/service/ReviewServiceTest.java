@@ -475,7 +475,10 @@ public class ReviewServiceTest {
 
         when(reviewRepository.findByCourtId(courtId)).thenReturn(List.of(review1, review2));
 
-        assert(reviewService.getCourtRating(courtId) == 4.0);
+
+        Map map = Map.of("rating", 4.0, "reviews", 2);
+
+        assert(Objects.equals(reviewService.getCourtRating(courtId), map));
     }
 
     @Test
@@ -484,7 +487,8 @@ public class ReviewServiceTest {
         Long courtId = 123L;
 
         when(reviewRepository.findByCourtId(courtId)).thenReturn(List.of());
+        Map map = Map.of("rating", 0.0, "reviews", 0);
 
-        assert(reviewService.getCourtRating(courtId) == 0.0);
+        assert(Objects.equals(reviewService.getCourtRating(courtId), map));
     }
 }

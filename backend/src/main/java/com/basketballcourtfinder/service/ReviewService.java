@@ -29,10 +29,14 @@ public class ReviewService {
         this.courtService = courtService;
     }
 
-    public double getCourtRating(Long courtId) {
-        return reviewRepository.findByCourtId(courtId).stream()
+    public Map<String, ?> getCourtRating(Long courtId) {
+        List<Review> reviews = reviewRepository.findByCourtId(courtId);
+
+        double rating = reviews.stream()
                 .mapToInt(Review::getRating)
                 .average().orElse(0.0);
+
+        return Map.of("rating", rating, "reviews", reviews.size());
     }
 
     public List<ReviewResponseDTO> findCourtReviews(Long courtId, Long userId) {
