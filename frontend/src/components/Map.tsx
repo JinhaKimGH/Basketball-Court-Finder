@@ -11,10 +11,18 @@ const marker = L.icon({
   iconAnchor: [30,60],
 })
 
+const selectedMarker = L.icon({
+  iconUrl: './assets/selected.png',
+  iconSize: [60, 60],
+  iconAnchor: [30,60],
+})
+
 export default function Map(
   props: {
     coordinates: LatLngTuple,
-    courts: Array<BasketballCourt>
+    courts: Array<BasketballCourt>,
+    setSelected: React.Dispatch<React.SetStateAction<number>>
+    selected: number
   }
 ) : JSX.Element {
   const [key, setKey] = React.useState(0); // Key property to force map container update
@@ -69,8 +77,15 @@ export default function Map(
         />
         <ZoomControl position="bottomright" />
         {
-          props.courts.map((pin) => (
-            <Marker key={pin.id} position={[pin.lat, pin.lon]} icon={marker}/>
+          props.courts.map((pin, idx) => (
+            <Marker 
+              key={pin.id} 
+              position={[pin.lat, pin.lon]} 
+              icon={
+                props.selected === idx ? selectedMarker : marker
+              }
+              eventHandlers={{click: () => props.setSelected(idx)}}
+            />
           ))
         }
       </MapContainer>

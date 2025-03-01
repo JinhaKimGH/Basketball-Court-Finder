@@ -6,6 +6,7 @@ export interface Address {
   country: string,
   postal_code: string,
   incomplete: boolean,
+  complete_addr?: string
 }
 
 export interface BasketballCourt {
@@ -21,6 +22,7 @@ export interface BasketballCourt {
     leisure: string,
     opening_hours: string,
     phone: string,
+    indoor: boolean
 }
 
 export interface BackendResponse {
