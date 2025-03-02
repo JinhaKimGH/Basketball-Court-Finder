@@ -1,6 +1,7 @@
 package com.basketballcourtfinder.service;
 
 import com.basketballcourtfinder.entity.BasketballCourt;
+import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.jsonmapping.OverpassResponse;
 import com.basketballcourtfinder.repository.BasketballCourtRepository;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -85,6 +86,51 @@ public class BasketballCourtService {
         }
 
         return existingCourts;
+    }
+
+    public BasketballCourt partialUpdate(long id, BasketballCourt updatedCourt) {
+        BasketballCourt existingCourt = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("basketball court", id));
+
+        // Only update fields that are not null
+        if (updatedCourt.getHoops() != null) {
+            existingCourt.setHoops(updatedCourt.getHoops());
+        }
+        if (updatedCourt.getSurface() != null) {
+            existingCourt.setSurface(updatedCourt.getSurface());
+        }
+        if (updatedCourt.getNetting() != null) {
+            if (updatedCourt.getNetting() < 0 || updatedCourt.getNetting() > 3) {
+                throw new IllegalArgumentException("Netting must be set to a predefined option.");
+            }
+            existingCourt.setNetting(updatedCourt.getNetting());
+        }
+        if (updatedCourt.getRim_type() != null) {
+            if (updatedCourt.getRim_type() < 0 || updatedCourt.getRim_type() > 3) {
+                throw new IllegalArgumentException("Rim type must be set to a predefined option.");
+            }
+            existingCourt.setRim_type(updatedCourt.getRim_type());
+        }
+        if (updatedCourt.getRim_height() != null) {
+            existingCourt.setRim_height(updatedCourt.getRim_height());
+        }
+        if (updatedCourt.getAddress() != null) {
+            existingCourt.setAddress(updatedCourt.getAddress());
+        }
+        if (updatedCourt.getAmenity() != null) {
+            existingCourt.setAmenity(updatedCourt.getAmenity());
+        }
+        if (updatedCourt.getWebsite() != null) {
+            existingCourt.setWebsite(updatedCourt.getWebsite());
+        }
+        if (updatedCourt.getOpening_hours() != null) {
+            existingCourt.setOpening_hours(updatedCourt.getOpening_hours());
+        }
+        if (updatedCourt.getPhone() != null) {
+            existingCourt.setPhone(updatedCourt.getPhone());
+        }
+
+        return repository.save(existingCourt);
     }
 
     private static String getApiUrl(double latitude, double longitude, int range) {

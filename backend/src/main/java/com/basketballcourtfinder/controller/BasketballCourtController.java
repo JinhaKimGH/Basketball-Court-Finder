@@ -4,6 +4,7 @@ import com.basketballcourtfinder.dto.CourtsDTO;
 import com.basketballcourtfinder.entity.BasketballCourt;
 import com.basketballcourtfinder.service.BasketballCourtService;
 import com.basketballcourtfinder.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,5 +34,15 @@ public class BasketballCourtController {
                 courtsDTO.getLongitude(), courtsDTO.getRange());
 
         return ResponseEntity.ok(courts);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> partialUpdate(@PathVariable long id, @RequestBody BasketballCourt updates) {
+        try {
+            BasketballCourt updatedCourt = courtService.partialUpdate(id, updates);
+            return ResponseEntity.status(HttpStatus.OK).body(updatedCourt);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.basketballcourtfinder.service;
 
 import com.basketballcourtfinder.entity.BasketballCourt;
+import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.repository.BasketballCourtRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +16,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
@@ -115,5 +116,89 @@ public class BasketballCourtServiceTest {
                 // returned
                 assertNotNull(courts); // Ensure the court is not null
                 assert (courts.size() == 1); // Make sure something in the set
+        }
+
+        @Test
+        public void testPartialUpdate_SuccessfulUpdate() {
+                BasketballCourt updates = new BasketballCourt();
+                updates.setName("Updated Court");
+                updates.setNetting(2);
+
+
+                long mock_courtId = 1L;
+                BasketballCourt existingCourt = new BasketballCourt();
+                existingCourt.setId(mock_courtId);
+                existingCourt.setName("Existing Court");
+                existingCourt.setNetting(1);
+                existingCourt.setRim_type(1);
+
+
+                when(repository.findById(mock_courtId)).thenReturn(Optional.of(existingCourt));
+                when(repository.save(any(BasketballCourt.class))).thenReturn(existingCourt);
+
+                BasketballCourt updatedCourt = service.partialUpdate(mock_courtId, updates);
+
+                assertNotNull(updatedCourt);
+                assertEquals(2, updatedCourt.getNetting());
+        }
+
+        @Test
+        public void testPartialUpdate_EntityNotFound() {
+                when(repository.findById(1L)).thenReturn(Optional.empty());
+
+                assertThrows(EntityNotFoundException.class, () -> service.partialUpdate(1L, new BasketballCourt()));
+        }
+
+        @Test
+        public void testPartialUpdate_NullFieldsNotUpdated() {
+                BasketballCourt updates = new BasketballCourt();
+                updates.setName("Updated Court");
+
+                BasketballCourt existingCourt = new BasketballCourt();
+                existingCourt.setId(1L);
+                existingCourt.setName("Existing Court");
+                existingCourt.setNetting(1);
+                existingCourt.setRim_type(1);
+
+                when(repository.findById(1L)).thenReturn(Optional.of(existingCourt));
+                when(repository.save(any(BasketballCourt.class))).thenReturn(existingCourt);
+
+                BasketballCourt updatedCourt = service.partialUpdate(1L, updates);
+
+                assertNotNull(updatedCourt);
+                assertEquals(1, updatedCourt.getNetting()); // Ensure netting remains unchanged
+        }
+
+        @Test
+        public void testPartialUpdate_InvalidNetting_ThrowsException() {
+                BasketballCourt updates = new BasketballCourt();
+                updates.setNetting(5); // Invalid value
+
+                BasketballCourt existingCourt = new BasketballCourt();
+                existingCourt.setId(1L);
+                existingCourt.setName("Existing Court");
+                existingCourt.setNetting(1);
+                existingCourt.setRim_type(1);
+
+
+                when(repository.findById(1L)).thenReturn(Optional.of(existingCourt));
+
+                assertThrows(IllegalArgumentException.class, () -> service.partialUpdate(1L, updates));
+        }
+
+        @Test
+        public void testPartialUpdate_InvalidRimType_ThrowsException() {
+                BasketballCourt updates = new BasketballCourt();
+                updates.setRim_type(-1); // Invalid value
+
+                BasketballCourt existingCourt = new BasketballCourt();
+                existingCourt.setId(1L);
+                existingCourt.setName("Existing Court");
+                existingCourt.setNetting(1);
+                existingCourt.setRim_type(1);
+
+                when(repository.findById(1L)).thenReturn(Optional.of(existingCourt));
+
+                assertThrows(IllegalArgumentException.class, () -> service.partialUpdate(1L, updates));
         }
 }

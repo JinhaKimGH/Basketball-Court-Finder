@@ -5,20 +5,24 @@ import com.basketballcourtfinder.entity.BasketballCourt;
 import com.basketballcourtfinder.service.BasketballCourtService;
 import com.basketballcourtfinder.service.UserService;
 import com.basketballcourtfinder.util.PasswordUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
@@ -66,9 +70,51 @@ public class BasketballCourtControllerTest {
                 .param("range", String.valueOf(courtsDTO.getRange()))
                 .header("Authorization", "Bearer mock-token"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].name").value("Test Court 1"))
-                .andExpect(jsonPath("$[1].id").value(2))
-                .andExpect(jsonPath("$[1].name").value("Test Court 2"));
+                .andExpect(jsonPath("$", hasSize(2)))  // Check for 2 items
+                .andExpect(jsonPath("$[*].id", containsInAnyOrder(1, 2))) // Verify ids in any order
+                .andExpect(jsonPath("$[*].name", containsInAnyOrder("Test Court 1", "Test Court 2"))); // Verify names in any order
+    }
+
+    @Test
+    public void testPartialUpdateSuccess() throws Exception {
+        long mockId = 1L;
+
+        BasketballCourt court = new BasketballCourt(mockId, "Test Court 1");
+
+
+        // Convert the User object to JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        String courtJson = objectMapper.writeValueAsString(court);
+
+        when(courtService.partialUpdate(mockId, court)).thenReturn(court);
+
+        mockMvc.perform(patch("/api/courts/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(courtJson) // Send JSON in request body
+                        .header("Authorization", "Bearer mock-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Test Court 1"));
+    }
+
+    @Test
+    public void testPartialUpdateFail() throws Exception {
+        long mockId = 1L;
+
+        BasketballCourt court = new BasketballCourt(mockId, "Test Court 1");
+
+
+        // Convert the User object to JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        String courtJson = objectMapper.writeValueAsString(court);
+
+        when(courtService.partialUpdate(mockId, court))
+                .thenThrow(new IllegalArgumentException("Rim type must be set to a predefined option."));
+
+        mockMvc.perform(patch("/api/courts/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(courtJson) // Send JSON in request body
+                        .header("Authorization", "Bearer mock-token"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Rim type must be set to a predefined option."));
     }
 }

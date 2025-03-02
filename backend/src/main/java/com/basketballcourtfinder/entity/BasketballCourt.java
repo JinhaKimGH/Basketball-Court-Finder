@@ -5,6 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,9 +31,17 @@ public class BasketballCourt {
     @Column(nullable = false)
     private String name;
 
-    private int hoops;
+    private Integer hoops;
 
     private String surface;
+
+    @Min(0) @Max(3) // Don't know, none, chain, nylon
+    private Integer netting;
+
+    @Min(0) @Max(3) // Don't know, single, 1.5, double
+    private Integer rim_type;
+
+    private Float rim_height;
 
     @Embedded
     private Address address;
@@ -52,7 +62,9 @@ public class BasketballCourt {
             this.lon = element.getCenter().getLon();
         }
         this.name = element.getTag("name");
-        this.hoops = Objects.equals(element.getTag("hoops"), "") ? 0 : Integer.parseInt(element.getTag("hoops"));
+        this.hoops = Objects.equals(element.getTag("hoops"), "")
+                ? 0
+                : Integer.parseInt(element.getTag("hoops"));
         this.surface = element.getTag("surface");
         this.address = new Address(element);
         this.amenity = element.getTag("amenity");
