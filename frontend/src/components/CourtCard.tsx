@@ -25,10 +25,11 @@ export default function CourtCard(
       zIndex={5}
       boxShadow={"rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px"}
       paddingTop={"100px"}
+      overflowY={"scroll"}
     >
       <Flex justifyContent={"space-between"}>
         <Heading size={"3xl"} fontWeight={300}>
-          {props.court.name}
+          {props.court.name || "Unnamed Court"}
         </Heading>
         <CloseButton onClick={() => props.closeCard()}/>
       </Flex>

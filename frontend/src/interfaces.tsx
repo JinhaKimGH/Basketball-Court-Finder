@@ -19,8 +19,10 @@ export interface BasketballCourt {
     address: Address,
     amenity: string,
     website: string,
-    leisure: string,
     opening_hours: string,
+    netting?: number,
+    rim_type?: number,
+    rim_height?: number,
     phone: string,
     indoor: boolean
 }
