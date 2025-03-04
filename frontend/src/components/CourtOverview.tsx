@@ -1,11 +1,14 @@
 import { BasketballCourt } from "@/interfaces";
-import { Collapsible, Flex, Heading, Link, List, Text } from "@chakra-ui/react";
+import { Button, Collapsible, Flex, Heading, Link, List, Text } from "@chakra-ui/react";
 import React from "react";
 import { LuChevronDown, LuClock, LuExternalLink, LuLink, LuMapPin, LuPhone } from "react-icons/lu";
 import { GiBasketballBasket, GiRopeCoil } from "react-icons/gi";
 import { PiCourtBasketballFill } from "react-icons/pi";
 import { RiMapPin4Line } from "react-icons/ri";
+import { AiOutlineColumnHeight } from "react-icons/ai";
 import { FaPersonArrowDownToLine } from "react-icons/fa6";
+import { DialogContent, DialogRoot, DialogTrigger } from "./ui/dialog";
+import CourtEditForm from "./CourtEditForm";
 
 export default function CourtOverview(
   props: {
@@ -61,6 +64,20 @@ export default function CourtOverview(
     } catch (error) {
       console.error("Error fetching location:", error);
     }
+  }
+
+  function hasIncompleteInfo(court: BasketballCourt): boolean {
+    return (
+      !court.website ||
+      !court.phone ||
+      !court.opening_hours ||
+      !court.hoops ||
+      !court.surface ||
+      court.indoor === null ||
+      !court.netting ||
+      !court.rim_type ||
+      !court.rim_height
+    );
   }
 
   React.useEffect(() => {
@@ -124,7 +141,14 @@ export default function CourtOverview(
 
   return (
     <>
-      <List.Root gap="2" variant="plain" fontSize={"15px"}>
+      <List.Root 
+        gap="2" 
+        variant="plain" 
+        fontSize={"15px"} 
+        width={{sm: "70%", md: "100%"}}
+        marginLeft={"auto"}
+        marginRight={"auto"}
+      >
         <Heading fontWeight={"400"} textAlign={"center"} padding={4}>Facility Info</Heading>
         <List.Item padding={3} alignItems={"center"}>
           <List.Indicator color="orange.500" boxSize={5}>
@@ -134,7 +158,7 @@ export default function CourtOverview(
             {court.address?.complete_addr || "Loading..."}
           </Text>
         </List.Item>
-        
+
         <List.Item padding={3} alignItems={"center"}>
           <List.Indicator color="orange.500" boxSize={5}>
             <LuLink size={20}/>
@@ -268,17 +292,38 @@ export default function CourtOverview(
             })()
           }
         </List.Item>
+        
+        <List.Item padding={3} alignItems={"center"}>
+          <List.Indicator color="orange.500" boxSize={5}>
+            <AiOutlineColumnHeight size={22}/>
+          </List.Indicator>
+          { court.rim_height ?
+            `${court.rim_height} foot height`
+            : `Unknown height`
+          }
+        </List.Item>
 
-        {/* Missing Attributes */}
-        <Heading fontWeight={"400"} textAlign="center" padding={4}>Add Missing Information</Heading>
-
-        {["hoops", "surface", "amenity", "website", "opening_hours", "netting", "rim_type", "rim_height", "phone", "indoor"].map((attr) =>
-          court[attr as keyof BasketballCourt] === undefined ? (
-            <List.Item key={attr} padding={3} alignItems={"center"}>
-              Missing: {attr}
-            </List.Item>
-          ) : null
-        )}
+        <DialogRoot>
+          <DialogTrigger asChild>
+            <Flex justifyContent={"center"} mt={7} mb={7} asChild>
+              <Button
+                colorPalette="orange"
+                variant="outline"
+                size="lg"
+                rounded="full"
+                onClick={() => {/* TODO: Add edit functionality */}}
+              >
+                {hasIncompleteInfo(court) ?
+                  "Suggest Missing Information"
+                  : "Update Court Information"
+                }
+              </Button>
+            </Flex>
+          </DialogTrigger>
+          <DialogContent>
+            <CourtEditForm/>
+          </DialogContent>
+        </DialogRoot>
       </List.Root>
     </>
   )

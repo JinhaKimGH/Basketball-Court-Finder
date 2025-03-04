@@ -89,14 +89,7 @@ export default function SearchBar(
         {searchIcon}
         <ProfilePopup iconSize={22}/>
       </Flex>, 
-    md: 
-      <Flex
-        gap="8px"
-        alignItems="center"
-      >
-        {searchIcon}
-        <ProfilePopup iconSize={22}/>
-      </Flex>, 
+    md: searchIcon,
     lg: searchIcon
   });
 
@@ -108,6 +101,7 @@ export default function SearchBar(
 
   // Show LuCircleRound in the top right only in large screens
   const userElement = useBreakpointValue({
+    md: <ProfilePopup iconSize={30}/>,
     lg: <ProfilePopup iconSize={30}/>
   });
   
@@ -131,7 +125,7 @@ export default function SearchBar(
               objectFit="cover"
             />
           }
-          width={{base: "100%", md: "100%", lg: "400px"}}
+          width={{base: "100%", md: "350px", lg: "400px"}}
           endElement={endElement}
         >
           <Input 

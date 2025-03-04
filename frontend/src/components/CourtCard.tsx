@@ -20,12 +20,12 @@ export default function CourtCard(
     <Container
       position={"absolute"}
       backgroundColor={"white"}
-      width={{lg: "464px"}}
+      width={{md: "400px", lg: "464px"}}
       height={"100vh"}
       zIndex={5}
       boxShadow={"rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px"}
       paddingTop={"100px"}
-      overflowY={"scroll"}
+      overflowY={"auto"}
     >
       <Flex justifyContent={"space-between"}>
         <Heading size={"3xl"} fontWeight={300}>
