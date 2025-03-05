@@ -1,5 +1,5 @@
 import { BasketballCourt } from "@/interfaces";
-import { Button, Collapsible, Flex, Heading, Link, List, Text } from "@chakra-ui/react";
+import { Collapsible, Flex, Heading, Link, List, Text } from "@chakra-ui/react";
 import React from "react";
 import { LuChevronDown, LuClock, LuExternalLink, LuLink, LuMapPin, LuPhone } from "react-icons/lu";
 import { GiBasketballBasket, GiRopeCoil } from "react-icons/gi";
@@ -8,7 +8,7 @@ import { RiMapPin4Line } from "react-icons/ri";
 import { AiOutlineColumnHeight } from "react-icons/ai";
 import { FaPersonArrowDownToLine } from "react-icons/fa6";
 import { DialogContent, DialogRoot, DialogTrigger } from "./ui/dialog";
-import CourtEditForm from "./CourtEditForm";
+import CourtEditForm, { FieldType } from "./CourtEditForm";
 
 export default function CourtOverview(
   props: {
@@ -64,20 +64,6 @@ export default function CourtOverview(
     } catch (error) {
       console.error("Error fetching location:", error);
     }
-  }
-
-  function hasIncompleteInfo(court: BasketballCourt): boolean {
-    return (
-      !court.website ||
-      !court.phone ||
-      !court.opening_hours ||
-      !court.hoops ||
-      !court.surface ||
-      court.indoor === null ||
-      !court.netting ||
-      !court.rim_type ||
-      !court.rim_height
-    );
   }
 
   React.useEffect(() => {
@@ -139,6 +125,23 @@ export default function CourtOverview(
     });
   }, [court.opening_hours]);
 
+  const renderMissingField = (field: FieldType, content: React.ReactNode) => (
+    <DialogRoot>
+      <DialogTrigger asChild>
+        <Text 
+          cursor="pointer" 
+          color="gray.500"
+          _hover={{ color: "orange.500" }}
+        >
+          {content}
+        </Text>
+      </DialogTrigger>
+      <DialogContent>
+        <CourtEditForm field={field} />
+      </DialogContent>
+    </DialogRoot>
+  );
+
   return (
     <>
       <List.Root 
@@ -172,7 +175,7 @@ export default function CourtOverview(
               <LuExternalLink/>
             </Link>
 
-            : "Unknown website"
+            : renderMissingField('website', 'Unknown website')
           }
         </List.Item>
 
@@ -180,44 +183,44 @@ export default function CourtOverview(
           <List.Indicator color="orange.500" boxSize={5}>
             <LuPhone size={20}/>
           </List.Indicator>
-          {court.phone || "Unknown phone number"}
+          {court.phone || renderMissingField('phone', 'Unknown phone number')}
         </List.Item>
 
-          <List.Item padding={3} alignItems={"center"}>
-            { transformHours.length > 0 ? 
-            <Collapsible.Root unmountOnExit>
-              <Collapsible.Trigger cursor={"pointer"}>
-                <Flex justifyContent={"space-between"} alignItems={"center"} gap={5}>
-                  <div>
-                    <List.Indicator color="orange.500" boxSize={5}>
-                      <LuClock size={20}/>
-                    </List.Indicator>
-                    Opening Hours
-                  </div>
-                  <LuChevronDown />
-                </Flex>
-              </Collapsible.Trigger>
-              <Collapsible.Content>
-                <List.Root gap="2" variant="plain" padding={6} paddingBottom={0}>
-                  {
-                    transformHours.map((hour, index) => (
-                      <List.Item key={index} padding={1}>
-                        {hour}
-                      </List.Item>
-                    ))
-                  }
-                </List.Root>
-              </Collapsible.Content>
-            </Collapsible.Root>
-            : 
-              <>
-                <List.Indicator color="orange.500" boxSize={5}>
-                  <GiBasketballBasket size={21}/>
-                </List.Indicator>
-                Unknown opening hours
-              </>
-            }
-          </List.Item>
+        <List.Item padding={3} alignItems={"center"}>
+          { transformHours.length > 0 ? 
+          <Collapsible.Root unmountOnExit>
+            <Collapsible.Trigger cursor={"pointer"}>
+              <Flex justifyContent={"space-between"} alignItems={"center"} gap={5}>
+                <div>
+                  <List.Indicator color="orange.500" boxSize={5}>
+                    <LuClock size={20}/>
+                  </List.Indicator>
+                  Opening Hours
+                </div>
+                <LuChevronDown />
+              </Flex>
+            </Collapsible.Trigger>
+            <Collapsible.Content>
+              <List.Root gap="2" variant="plain" padding={6} paddingBottom={0}>
+                {
+                  transformHours.map((hour, index) => (
+                    <List.Item key={index} padding={1}>
+                      {hour}
+                    </List.Item>
+                  ))
+                }
+              </List.Root>
+            </Collapsible.Content>
+          </Collapsible.Root>
+          : 
+            <>
+              <List.Indicator color="orange.500" boxSize={5}>
+                <GiBasketballBasket size={21}/>
+              </List.Indicator>
+              Unknown opening hours
+            </>
+          }
+        </List.Item>
 
         <Heading fontWeight={"400"} textAlign="center" padding={4}>Court Specifications</Heading>
 
@@ -227,7 +230,7 @@ export default function CourtOverview(
           </List.Indicator>
           { court.hoops ?
             `${court.hoops} hoops`
-            : "Unknown number of hoops"
+            : renderMissingField('hoops', 'Unknown number of hoops')
           }
         </List.Item>
       
@@ -237,7 +240,7 @@ export default function CourtOverview(
           </List.Indicator>
           { court.surface ?
             `${court.surface.charAt(0).toUpperCase() + court.surface.slice(1)} surface`
-            : "Unknown court surface type"
+            : renderMissingField('surface', 'Unknown court surface type')
           }
         </List.Item>
         
@@ -248,7 +251,7 @@ export default function CourtOverview(
           { court.indoor !== null ?
             (court.indoor ? "Indoor" : "Outdoor") + " court"
 
-            : "Unknown if indoor or outdoor"
+            : renderMissingField('indoor', 'Unknown if indoor or outdoor')
           }
         </List.Item>
 
@@ -267,7 +270,7 @@ export default function CourtOverview(
                 case 3:
                   return "Nylon net";
                 default:
-                  return "Unknown net type";
+                  return renderMissingField('netting', 'Unknown net type');
               }
             })()
           }
@@ -287,7 +290,7 @@ export default function CourtOverview(
                 case 3:
                   return "Double rim";
                 default:
-                  return "Unknown rim type";
+                  return renderMissingField('rim_type', 'Unknown rim type');
               }
             })()
           }
@@ -299,31 +302,9 @@ export default function CourtOverview(
           </List.Indicator>
           { court.rim_height ?
             `${court.rim_height} foot height`
-            : `Unknown height`
+            : renderMissingField('rim_height', 'Unknown rim height')
           }
         </List.Item>
-
-        <DialogRoot>
-          <DialogTrigger asChild>
-            <Flex justifyContent={"center"} mt={7} mb={7} asChild>
-              <Button
-                colorPalette="orange"
-                variant="outline"
-                size="lg"
-                rounded="full"
-                onClick={() => {/* TODO: Add edit functionality */}}
-              >
-                {hasIncompleteInfo(court) ?
-                  "Suggest Missing Information"
-                  : "Update Court Information"
-                }
-              </Button>
-            </Flex>
-          </DialogTrigger>
-          <DialogContent>
-            <CourtEditForm/>
-          </DialogContent>
-        </DialogRoot>
       </List.Root>
     </>
   )

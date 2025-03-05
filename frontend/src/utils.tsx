@@ -14,6 +14,16 @@ export function pickPalette(name: string) {
   return colorPalette[index];
 }
 
+export function isValidWebsite(url: string): boolean {
+  const urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/i;
+  return urlPattern.test(url);
+}
+
+export function isValidPhoneNumber(phone: string): boolean {
+  const phonePattern = /^\+?[0-9\s\-()]{7,15}$/;
+  return phonePattern.test(phone.trim());
+}
+
 // Haversine Formula Distance Calculation
 export function calcDistance(lat1: number, lon1: number, lat2: number, lon2: number){
   const earthRadius = 6371
