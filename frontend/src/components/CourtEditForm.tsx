@@ -1,5 +1,5 @@
 import { Button, Fieldset, Flex, Input, NativeSelect, Stack } from "@chakra-ui/react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { DialogBody, DialogFooter, DialogCloseTrigger } from "./ui/dialog";
 import { NumberInputField, NumberInputRoot } from "./ui/number-input";
 import { isValidPhoneNumber, isValidWebsite } from "@/utils";
@@ -12,12 +12,16 @@ export type FieldType = 'website' | 'phone' | 'opening_hours' | 'hoops' | 'surfa
 
 export default function CourtEditForm(
   props: {
-    field: FieldType
+    field: FieldType,
+    id: number
   }
 ) {
+  const [isLoading, setIsLoading] = useState(false);
   const formRef = useRef<HTMLFormElement>(null)
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const baseApiUrl = import.meta.env.VITE_APP_API_BASE_URL;
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (formRef.current) {
       const formData = new FormData(formRef.current);
@@ -40,8 +44,28 @@ export default function CourtEditForm(
         console.log("Fail");
         return;
       }
-
-      
+      setIsLoading(true);
+      try {
+        const response = await fetch(`${baseApiUrl}/api/courts/${props.id}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(processedValues)
+          }
+        );
+  
+        if (response.ok) {
+          // handle successful update -> maybe update the court's state?
+        } else {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+      } catch (e) {
+        console.error("Error updating basketball court information: ", e); // todo better logging
+      }
+      setIsLoading(false);
     }
   };
 
@@ -158,7 +182,7 @@ export default function CourtEditForm(
         </Fieldset.Root>
       </DialogBody>
       <DialogFooter>
-        <Button type="submit">Submit</Button>
+        <Button type="submit" loading={isLoading}>Submit</Button>
       </DialogFooter>
       <DialogCloseTrigger />
     </form>

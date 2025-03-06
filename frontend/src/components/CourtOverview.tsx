@@ -379,7 +379,7 @@ export default function CourtOverview(
 
       {selectedField && (
         <DialogContent maxWidth={"80%"}>
-          <CourtEditForm field={selectedField} />
+          <CourtEditForm field={selectedField} id={court.id}/>
         </DialogContent>
       )}
     </DialogRoot>
