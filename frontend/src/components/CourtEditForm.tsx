@@ -8,7 +8,7 @@ import { withMask } from "use-mask-input";
 export type FieldType = 'website' | 'phone' | 'opening_hours' | 'hoops' | 'surface' | 
                  'indoor' | 'netting' | 'rim_type' | 'rim_height' | 'amenity'; 
                  
-//TODO: AMENITY? ALSO OPENING HOURS. Why does NumberInput fail? Change card to have a "Add missing informaiton section, and suggest and edit button?"
+//TODO:  OPENING HOURS. Add error messages (required inputs)
 
 export default function CourtEditForm(
   props: {
@@ -33,13 +33,15 @@ export default function CourtEditForm(
 
       if(processedValues.website && !isValidWebsite(processedValues.website as string)) {
         console.log("FAIL");
+        return;
       }
 
       if(processedValues.phone && !isValidPhoneNumber(processedValues.phone as string)) {
         console.log("Fail");
+        return;
       }
 
-      console.log(processedValues); 
+      
     }
   };
 
@@ -139,16 +141,14 @@ export default function CourtEditForm(
     }
   };
 
-  // opening_hours: string,
-
   return (
     <form ref={formRef} onSubmit={handleSubmit}>
       <DialogBody>
         <Fieldset.Root pt={5}>
           <Stack>
-            <Fieldset.Legend>{`Update ${props.field}`}</Fieldset.Legend>
+            <Fieldset.Legend>{`Update ${props.field.split("_").join(' ')}`}</Fieldset.Legend>
             <Fieldset.HelperText>
-              {`Please provide the correct ${props.field} information.`}
+              {`Please provide the correct ${props.field.split("_").join(' ')} information.`}
             </Fieldset.HelperText>
           </Stack>
 

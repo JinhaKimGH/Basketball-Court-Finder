@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import type { ButtonProps } from "@chakra-ui/react"
 import { IconButton as ChakraIconButton } from "@chakra-ui/react"
 import * as React from "react"
