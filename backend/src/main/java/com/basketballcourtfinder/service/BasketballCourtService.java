@@ -130,6 +130,14 @@ public class BasketballCourtService {
             existingCourt.setPhone(updatedCourt.getPhone());
         }
 
+        if (updatedCourt.getIndoor() != null) {
+            existingCourt.setIndoor(updatedCourt.getIndoor());
+        }
+
+        if (updatedCourt.getName() != null) {
+            existingCourt.setName(updatedCourt.getName());
+        }
+
         return repository.save(existingCourt);
     }
 

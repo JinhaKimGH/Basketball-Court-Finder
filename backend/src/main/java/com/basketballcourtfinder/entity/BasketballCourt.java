@@ -35,10 +35,12 @@ public class BasketballCourt {
 
     private String surface;
 
-    @Min(0) @Max(3) // Don't know, none, chain, nylon
+    private Boolean indoor;
+
+    @Min(1) @Max(3) // Don't know, none, chain, nylon
     private Integer netting;
 
-    @Min(0) @Max(3) // Don't know, single, 1.5, double
+    @Min(1) @Max(3) // Don't know, single, 1.5, double
     private Integer rim_type;
 
     private Float rim_height;
@@ -72,6 +74,7 @@ public class BasketballCourt {
         this.leisure = element.getTag("leisure");
         this.opening_hours = element.getTag("opening_hours");
         this.phone = element.getTag("phone");
+        this.indoor = null;
     }
 
 
