@@ -65,7 +65,7 @@ export default function CourtCard(
           textStyle="sm"
           marginTop={1}
         >
-          {props.court.amenity.charAt(0).toUpperCase() + props.court.amenity.slice(1)}
+          {props.court.amenity.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
         </Text>
       }
       

@@ -3,8 +3,9 @@ export interface Address {
   street: string,
   city: string,
   state: string,
+  road: string,
   country: string,
-  postal_code: string,
+  postcode: string,
   incomplete: boolean,
   complete_addr?: string
 }

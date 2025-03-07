@@ -7,6 +7,7 @@ import { PiCourtBasketballFill, PiSparkleLight } from "react-icons/pi";
 import { RiMapPin4Line } from "react-icons/ri";
 import { AiOutlineColumnHeight } from "react-icons/ai";
 import { FaPersonArrowDownToLine } from "react-icons/fa6";
+import { MdOutlineDriveFileRenameOutline } from "react-icons/md";
 import { DialogContent, DialogRoot, DialogTrigger } from "./ui/dialog";
 import CourtEditForm, { FieldType } from "./CourtEditForm";
 
@@ -23,10 +24,10 @@ export default function CourtOverview(
 
   function formatAddress(address: Partial<BasketballCourt["address"]>): string {
     return [
-      address.house_number ? `${address.house_number} ${address.street}` : address.street,
+      address.house_number ? `${address.house_number} ${address.street || address.road}` : (address.street || address.road),
       address.city,
       address.state,
-      address.postal_code,
+      address.postcode,
     ]
       .filter(Boolean) // Remove empty values
       .join(", ");
@@ -102,7 +103,7 @@ export default function CourtOverview(
 
   const transformHours = React.useMemo(() => {
     if (!court.opening_hours) return [];
-    
+    console.log(court.opening_hours)
     const daysMap: { [key: string]: string } = {
         "Mo": "Monday",
         "Tu": "Tuesday",
@@ -163,6 +164,8 @@ export default function CourtOverview(
   const getMissingFields = () => {
     const missing: Array<{ field: FieldType; label: string, icon: React.ReactNode }> = [];
     
+    if (!court.name) missing.push({ field: 'name', label: 'Add name', icon: <MdOutlineDriveFileRenameOutline size={22}/>});
+    if (!court.amenity) missing.push({ field: 'amenity', label: 'Add amenity type', icon: <PiSparkleLight size={22}/>});
     if (!court.website) missing.push({ field: 'website', label: 'Add website', icon: <LuLink size={20}/>});
     if (!court.phone) missing.push({ field: 'phone', label: 'Add phone number', icon: <LuPhone size={20}/>});
     if (!court.opening_hours) missing.push({ field: 'opening_hours', label: 'Add opening hours', icon: <LuClock size={20}/>});
@@ -172,7 +175,6 @@ export default function CourtOverview(
     if (!court.netting) missing.push({ field: 'netting', label: 'Add net type', icon: <GiRopeCoil size={22}/>});
     if (!court.rim_type) missing.push({ field: 'rim_type', label: 'Add rim type', icon: <RiMapPin4Line size={22}/>});
     if (!court.rim_height) missing.push({ field: 'rim_height', label: 'Add rim height', icon: <AiOutlineColumnHeight size={22}/>});
-    if (!court.amenity) missing.push({ field: 'amenity', label: 'Add amenity type', icon: <PiSparkleLight size={22}/>});
 
     return missing;
   };
@@ -253,11 +255,11 @@ export default function CourtOverview(
           </List.Item>
         }
 
-        { (court.hoops || court.surface || court.indoor || court.rim_height || court.rim_type || court.netting) &&
+        { (court.hoops || court.surface || court.indoor !== null || court.rim_height || court.rim_type || court.netting) &&
           <Heading fontWeight={"400"} textAlign="center" padding={4}>Court Specifications</Heading>
         }
         
-        { court.hoops &&
+        { court.hoops ?
           <List.Item padding={3} alignItems={"center"}>
             <List.Indicator color="orange.500" boxSize={5}>
               <GiBasketballBasket size={21}/>
@@ -265,7 +267,7 @@ export default function CourtOverview(
             {`${court.hoops} hoops`}
 
             {renderTrigger("hoops")}
-          </List.Item>
+          </List.Item> : null
         }
 
         { court.surface &&
@@ -317,7 +319,7 @@ export default function CourtOverview(
 
 
         
-        { (court.rim_type && 0 < court.rim_type && court.rim_type >= 3) &&
+        { (court.rim_type && 0 < court.rim_type && court.rim_type <= 3) &&
           <List.Item padding={3} alignItems={"center"}>
             <List.Indicator color="orange.500" boxSize={5}>
               <RiMapPin4Line size={22}/>
@@ -378,8 +380,8 @@ export default function CourtOverview(
       </List.Root>
 
       {selectedField && (
-        <DialogContent maxWidth={"80%"}>
-          <CourtEditForm field={selectedField} id={court.id}/>
+        <DialogContent maxWidth={{base: "80%", lg: "500px"}}>
+          <CourtEditForm field={selectedField} id={court.id} index={index} setCourts={setCourts} court={court}/>
         </DialogContent>
       )}
     </DialogRoot>

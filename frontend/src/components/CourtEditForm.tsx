@@ -4,19 +4,25 @@ import { DialogBody, DialogFooter, DialogCloseTrigger } from "./ui/dialog";
 import { NumberInputField, NumberInputRoot } from "./ui/number-input";
 import { isValidPhoneNumber, isValidWebsite } from "@/utils";
 import { withMask } from "use-mask-input";
+import { BasketballCourt } from "@/interfaces";
+import OpeningHoursField from './OpeningHoursField';
 
 export type FieldType = 'website' | 'phone' | 'opening_hours' | 'hoops' | 'surface' | 
-                 'indoor' | 'netting' | 'rim_type' | 'rim_height' | 'amenity'; 
+                 'indoor' | 'netting' | 'rim_type' | 'rim_height' | 'amenity' | 'name'; 
                  
-//TODO:  OPENING HOURS. Add error messages (required inputs)
+//TODO:  OPENING HOURS.  
 
 export default function CourtEditForm(
   props: {
     field: FieldType,
-    id: number
+    id: number,
+    setCourts: React.Dispatch<React.SetStateAction<BasketballCourt[]>>,
+    court: BasketballCourt,
+    index: number // Place in the array
   }
 ) {
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const formRef = useRef<HTMLFormElement>(null)
 
   const baseApiUrl = import.meta.env.VITE_APP_API_BASE_URL;
@@ -24,6 +30,7 @@ export default function CourtEditForm(
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (formRef.current) {
+      setErrorMessage("");
       const formData = new FormData(formRef.current);
       const values = Object.fromEntries(formData.entries());
 
@@ -35,13 +42,18 @@ export default function CourtEditForm(
         ])
       );
 
-      if(processedValues.website && !isValidWebsite(processedValues.website as string)) {
-        console.log("FAIL");
+      if (!processedValues[props.field]) {
+        setErrorMessage("Field must be filled");
         return;
       }
 
-      if(processedValues.phone && !isValidPhoneNumber(processedValues.phone as string)) {
-        console.log("Fail");
+      if(props.field == "website" && !isValidWebsite(processedValues.website as string)) {
+        setErrorMessage("Invalid website.");
+        return;
+      }
+
+      if(props.field == "phone" && !isValidPhoneNumber(processedValues.phone as string)) {
+        setErrorMessage("Invalid phone number.");
         return;
       }
       setIsLoading(true);
@@ -56,14 +68,22 @@ export default function CourtEditForm(
             body: JSON.stringify(processedValues)
           }
         );
-  
+
         if (response.ok) {
-          // handle successful update -> maybe update the court's state?
+          const updatedCourt = await response.json();
+          // Update the courts array with the new data
+          props.setCourts(prevCourts => 
+            prevCourts.map((court, i) => 
+              i === props.index ? updatedCourt : court
+            )
+          );
         } else {
+          const text = await response.text();
+          setErrorMessage(text || "Something went wrong");
           throw new Error(`HTTP error! status: ${response.status}`);
         }
       } catch (e) {
-        console.error("Error updating basketball court information: ", e); // todo better logging
+        console.error("Error updating basketball court information: ", e); // TODO: New Relic Logging
       }
       setIsLoading(false);
     }
@@ -75,14 +95,14 @@ export default function CourtEditForm(
         return (
           <div>
             <label htmlFor="website">Website</label>
-            <Input id="website" name="website"/>
+            <Input id="website" name="website" borderColor={errorMessage ? "red" : "grey"}/>
           </div>
         );
       case 'phone':
         return (
           <div>
             <label htmlFor="phone">Phone Number</label>
-            <Input id="phone" name="phone" ref={withMask("999-999-9999")}/>
+            <Input id="phone" name="phone" ref={withMask("999-999-9999")} borderColor={errorMessage ? "red" : "grey"}/>
           </div>
         );
       case 'hoops':
@@ -90,7 +110,7 @@ export default function CourtEditForm(
           <div>
             <label htmlFor="hoops">Number of Hoops</label>
             <NumberInputRoot min={0} max={100}>
-              <NumberInputField id="hoops" name="hoops"/>
+              <NumberInputField id="hoops" name="hoops" borderColor={errorMessage ? "red" : "grey"}/>
             </NumberInputRoot>
           </div>
         );
@@ -98,14 +118,14 @@ export default function CourtEditForm(
         return (
           <div>
             <label htmlFor="surface">Surface Type</label>
-            <Input id="surface" name="surface"/>
+            <Input id="surface" name="surface" borderColor={errorMessage ? "red" : "grey"}/>
           </div>
         );
       case 'amenity':
         return (
           <div>
             <label htmlFor="amenity">Amenity</label>
-            <Input id="amenity" name="amenity"/>
+            <Input id="amenity" name="amenity" borderColor={errorMessage ? "red" : "grey"}/>
           </div>
         );
       case 'netting':
@@ -113,8 +133,7 @@ export default function CourtEditForm(
           <div>
             <label htmlFor="netting">Net Type</label>
             <NativeSelect.Root>
-              <NativeSelect.Field id="netting" name="netting">
-                <option value={0}>Not sure</option>
+              <NativeSelect.Field id="netting" name="netting" borderColor={errorMessage ? "red" : "grey"}>
                 <option value={1}>None</option>
                 <option value={2}>Chain</option>
                 <option value={3}>Nylon</option>
@@ -128,8 +147,7 @@ export default function CourtEditForm(
           <div>
             <label htmlFor="rim_type">Rim Type</label>
             <NativeSelect.Root>
-              <NativeSelect.Field id="rim_type" name="rim_type">
-                <option value={0}>Not sure</option>
+              <NativeSelect.Field id="rim_type" name="rim_type" borderColor={errorMessage ? "red" : "grey"}>
                 <option value={1}>Single</option>
                 <option value={2}>1.5</option>
                 <option value={3}>Double</option>
@@ -155,8 +173,32 @@ export default function CourtEditForm(
           <div>
             <label htmlFor="rim_height">Rim Height (ft)</label>
             <NumberInputRoot min={4} max={13}>
-              <NumberInputField id="rim_height" name="rim_height"/>
+              <NumberInputField id="rim_height" name="rim_height" borderColor={errorMessage ? "red" : "grey"}/>
             </NumberInputRoot>
+          </div>
+        );
+      case 'name':
+        return (
+          <div>
+            <label htmlFor="name">Name</label>
+            <Input id="name" name="name" borderColor={errorMessage ? "red" : "grey"}/>
+          </div>
+        );
+      case 'opening_hours':
+        return (
+          <div>
+            <OpeningHoursField
+              onChange={(value) => {
+                if (formRef.current) {
+                  const input = formRef.current.querySelector('input[name="opening_hours"]');
+                  if (input) {
+                    (input as HTMLInputElement).value = value;
+                  }
+                }
+              }}
+              court={props.court}
+            />
+            <input type="hidden" name="opening_hours" />
           </div>
         );
       // Add other cases for each field type
@@ -167,8 +209,8 @@ export default function CourtEditForm(
 
   return (
     <form ref={formRef} onSubmit={handleSubmit}>
-      <DialogBody>
-        <Fieldset.Root pt={5}>
+      <DialogBody pb={1}>
+        <Fieldset.Root pt={5} invalid>
           <Stack>
             <Fieldset.Legend>{`Update ${props.field.split("_").join(' ')}`}</Fieldset.Legend>
             <Fieldset.HelperText>
@@ -179,6 +221,9 @@ export default function CourtEditForm(
           <Fieldset.Content>
             {renderField(props.field)}
           </Fieldset.Content>
+          <Fieldset.ErrorText marginTop={4}>
+            {errorMessage}
+          </Fieldset.ErrorText>
         </Fieldset.Root>
       </DialogBody>
       <DialogFooter>
