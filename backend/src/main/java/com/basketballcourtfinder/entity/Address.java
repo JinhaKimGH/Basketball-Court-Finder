@@ -18,7 +18,7 @@ public class Address {
     private String city;
     private String state;
     private String country;
-    private String postal_code;
+    private String postcode;
 
     public Address(OverpassResponse.Element element) {
         this.house_number = element.getTag("addr:housenumber");
@@ -26,7 +26,7 @@ public class Address {
         this.city = element.getTag("addr:city");
         this.state = element.getTag("addr:province") != null ? element.getTag("addr:province") : element.getTag("addr:state");
         this.country = element.getTag("addr:country");
-        this.postal_code = element.getTag("addr:postcode");
+        this.postcode = element.getTag("addr:postcode");
     }
 
     /*
@@ -35,6 +35,6 @@ public class Address {
     public boolean isIncomplete() {
         return  Objects.equals(this.house_number, "") ||
                 Objects.equals(this.city, "") || Objects.equals(this.street, "") ||
-                Objects.equals(this.postal_code, "");
+                Objects.equals(this.postcode, "");
     }
 }

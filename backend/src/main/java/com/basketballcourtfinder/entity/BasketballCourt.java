@@ -40,7 +40,7 @@ public class BasketballCourt {
     @Min(1) @Max(3) // Don't know, none, chain, nylon
     private Integer netting;
 
-    @Min(1) @Max(3) // Don't know, single, 1.5, double
+    @Min(1 ) @Max(3) // Don't know, single, 1.5, double
     private Integer rim_type;
 
     private Float rim_height;
