@@ -1,4 +1,4 @@
-import { Button, Fieldset, Flex, Input, NativeSelect, Stack } from "@chakra-ui/react";
+import { Alert, Button, Fieldset, Flex, Input, NativeSelect, Stack } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 import { DialogBody, DialogFooter, DialogCloseTrigger } from "./ui/dialog";
 import { NumberInputField, NumberInputRoot } from "./ui/number-input";
@@ -6,11 +6,10 @@ import { isValidPhoneNumber, isValidWebsite } from "@/utils";
 import { withMask } from "use-mask-input";
 import { BasketballCourt } from "@/interfaces";
 import OpeningHoursField from './OpeningHoursField';
+import React from "react";
 
 export type FieldType = 'website' | 'phone' | 'opening_hours' | 'hoops' | 'surface' | 
                  'indoor' | 'netting' | 'rim_type' | 'rim_height' | 'amenity' | 'name'; 
-                 
-//TODO:  OPENING HOURS.  
 
 export default function CourtEditForm(
   props: {
@@ -22,8 +21,21 @@ export default function CourtEditForm(
   }
 ) {
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const formRef = useRef<HTMLFormElement>(null)
+  const [errorMessage, setErrorMessage] = useState("");  
+  const [showSuccess, setShowSuccess] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Add timeout ref to clean up
+  const successTimeoutRef = useRef<number>();
+
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        window.clearTimeout(successTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const baseApiUrl = import.meta.env.VITE_APP_API_BASE_URL;
 
@@ -77,6 +89,12 @@ export default function CourtEditForm(
               i === props.index ? updatedCourt : court
             )
           );
+          setShowSuccess(true);
+          
+          // Auto hide after 3 seconds and close dialog
+          successTimeoutRef.current = window.setTimeout(() => {
+            setShowSuccess(false);
+          }, 3000);
         } else {
           const text = await response.text();
           setErrorMessage(text || "Something went wrong");
@@ -196,7 +214,7 @@ export default function CourtEditForm(
                   }
                 }
               }}
-              court={props.court}
+              value={props.court.opening_hours}
             />
             <input type="hidden" name="opening_hours" />
           </div>
@@ -218,13 +236,22 @@ export default function CourtEditForm(
             </Fieldset.HelperText>
           </Stack>
 
-          <Fieldset.Content>
+          <Fieldset.Content width="100%">
             {renderField(props.field)}
           </Fieldset.Content>
           <Fieldset.ErrorText marginTop={4}>
             {errorMessage}
           </Fieldset.ErrorText>
         </Fieldset.Root>
+        {showSuccess && (
+          <Alert.Root status="success">
+            <Alert.Indicator />
+            <Alert.Title>Success!</Alert.Title>
+              <Alert.Description>
+                {`The ${props.field.split("_").join(" ")} has been updated.`}
+              </Alert.Description>
+          </Alert.Root>
+        )}
       </DialogBody>
       <DialogFooter>
         <Button type="submit" loading={isLoading}>Submit</Button>

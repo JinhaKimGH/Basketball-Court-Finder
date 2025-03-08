@@ -103,7 +103,6 @@ export default function CourtOverview(
 
   const transformHours = React.useMemo(() => {
     if (!court.opening_hours) return [];
-    console.log(court.opening_hours)
     const daysMap: { [key: string]: string } = {
         "Mo": "Monday",
         "Tu": "Tuesday",

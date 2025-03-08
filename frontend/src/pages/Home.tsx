@@ -30,12 +30,12 @@ export default function Home() {
       city: "Toronto",
       state: "Ontario",
       country: "Canada",
-      postal_code: "ZZZ 123",
+      postcode: "ZZZ 123",
       incomplete: false,
     },
     amenity: "Park",
     website: "www.google.com",
-    opening_hours: "Mo-Fr 07:30-22:00 Sa 09:00-23:00 Su 10:00-18:00",
+    opening_hours: "Mo-Fr 07:30-22:00; Sa 09:00-23:00; Su 10:00-18:00",
     phone: "647 - 999 - 9999",
     indoor: false
   }]);
