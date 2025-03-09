@@ -68,7 +68,6 @@ public class ReviewControllerTest {
         review.setReviewId(1L);
         review.setRating(5);
         review.setContent("Great court!");
-        review.setTitle("Great court!");
         review.setTotalVotes(10);
         review.setAuthorDisplayName("Test User");
         review.setAuthorTrustScore(100);
@@ -107,7 +106,6 @@ public class ReviewControllerTest {
         review.setCourtId(1L);
         review.setRating(5);
         review.setBody("Great court!");
-        review.setTitle("Great court!");
 
         String reviewJson = new ObjectMapper().writeValueAsString(review);
 
@@ -126,7 +124,6 @@ public class ReviewControllerTest {
         review.setCourtId(1L);
         review.setRating(5);
         review.setBody("Great court!");
-        review.setTitle("Great court!");
 
         String reviewJson = new ObjectMapper().writeValueAsString(review);
 
@@ -145,7 +142,6 @@ public class ReviewControllerTest {
         review.setCourtId(1L);
         review.setRating(5);
         review.setBody("Great court!");
-        review.setTitle("Great court!");
 
         String reviewJson = new ObjectMapper().writeValueAsString(review);
 
@@ -167,17 +163,16 @@ public class ReviewControllerTest {
         review.setCourtId(1L);
         review.setRating(5);
         review.setBody("Great court!");
-        review.setTitle("Great court!");
 
         String reviewJson = new ObjectMapper().writeValueAsString(review);
 
-        doThrow(new EntityNotFoundException("review", 1L)).when(reviewService).saveReview(review, courtId);
+        doThrow(new EntityNotFoundException("court", 1L)).when(reviewService).saveReview(review, courtId);
 
         mockMvc.perform(post("/api/review")
                 .contentType("application/json")
                 .content(reviewJson))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("review with ID 1 not found"));
+                .andExpect(content().string("court with ID 1 not found"));
     }
 
     @Test
@@ -190,42 +185,16 @@ public class ReviewControllerTest {
         review.setCourtId(1L);
         review.setRating(5);
         review.setBody("Great court!");
-        review.setTitle("Great court!");
 
         String reviewJson = new ObjectMapper().writeValueAsString(review);
 
-        doNothing().when(reviewService).updateReviewTitle(courtId, userId, "Great court!");
         doNothing().when(reviewService).updateReviewBody(courtId, userId, "Great court!");
         doNothing().when(reviewService).updateReviewRating(courtId, userId, 5);
 
         mockMvc.perform(put("/api/review")
-                .contentType("application/json")
-                .content(reviewJson))
+                        .contentType("application/json")
+                        .content(reviewJson))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    public void testPutReviewSuccessTitle() throws Exception {
-        setup_authUser();
-        long courtId = 1L;
-        long userId = 1L;
-
-        ReviewDTO review = new ReviewDTO();
-        review.setCourtId(1L);
-        review.setTitle("Great court!");
-
-        String reviewJson = new ObjectMapper().writeValueAsString(review);
-
-        doNothing().when(reviewService).updateReviewTitle(courtId, userId, "Great court!");
-
-        mockMvc.perform(put("/api/review")
-                .contentType("application/json")
-                .content(reviewJson))
-                .andExpect(status().isOk());
-
-        verify(reviewService).updateReviewTitle(courtId, userId, "Great court!");
-        verify(reviewService, never()).updateReviewBody(courtId, userId, "Great court!");
-        verify(reviewService, never()).updateReviewRating(courtId, userId, 5);
     }
 
     @Test
@@ -248,7 +217,6 @@ public class ReviewControllerTest {
                 .andExpect(status().isOk());
 
         verify(reviewService).updateReviewBody(courtId, userId, "Great court!");
-        verify(reviewService, never()).updateReviewTitle(courtId, userId, "Great court!");
         verify(reviewService, never()).updateReviewRating(courtId, userId, 5);
     }
 
@@ -272,7 +240,6 @@ public class ReviewControllerTest {
                 .andExpect(status().isOk());
 
         verify(reviewService).updateReviewRating(courtId, userId, 5);
-        verify(reviewService, never()).updateReviewTitle(courtId, userId, "Great court!");
         verify(reviewService, never()).updateReviewBody(courtId, userId, "Great court!");
     }
 
@@ -292,7 +259,6 @@ public class ReviewControllerTest {
                 .andExpect(content().string("At least one field must not be null or blank."));
 
         verify(reviewService, never()).updateReviewRating(anyLong(), anyLong(), anyInt());
-        verify(reviewService, never()).updateReviewTitle(anyLong(), anyLong(), anyString());
         verify(reviewService, never()).updateReviewBody(anyLong(), anyLong(), anyString());
     }
 
@@ -388,6 +354,40 @@ public class ReviewControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("rating").value(5))
                 .andExpect(jsonPath("reviews").value(1));
+    }
+
+    @Test
+    public void testReviewRetrievalAuthFail() throws Exception {
+        mockMvc.perform(get("/api/review/single")
+                        .param("courtId", String.valueOf(1L)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testReviewRetrievalSuccess() throws Exception {
+        setup_authUser();
+        Long mockCourtId = 1L;
+
+        ReviewResponseDTO review = new ReviewResponseDTO();
+        review.setReviewId(1L);
+        review.setRating(5);
+        review.setContent("Great court!");
+        review.setTotalVotes(10);
+        review.setAuthorDisplayName("Test User");
+        review.setAuthorTrustScore(100);
+        review.setUpvoted(true);
+        review.setDownvoted(false);
+        review.setCreatedAt(new Date());
+        review.setEdited(false);
+
+        when(reviewService.findCourtReview(mockCourtId, 1L)).thenReturn(review);
+
+        mockMvc.perform(get("/api/review/single")
+                        .param("courtId", String.valueOf(mockCourtId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.reviewId").value(1L))
+                .andExpect(jsonPath("$.rating").value(5))
+                .andExpect(jsonPath("$.content").value("Great court!"));
     }
 
 }

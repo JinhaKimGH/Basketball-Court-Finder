@@ -3,6 +3,7 @@ package com.basketballcourtfinder.service;
 import com.basketballcourtfinder.dto.ReviewDTO;
 import com.basketballcourtfinder.dto.ReviewResponseDTO;
 import com.basketballcourtfinder.entity.*;
+import com.basketballcourtfinder.exceptions.EntityAlreadyExistsException;
 import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.repository.ReviewRepository;
 import com.basketballcourtfinder.repository.UserRepository;
@@ -39,6 +40,26 @@ public class ReviewService {
         return Map.of("rating", rating, "reviews", reviews.size());
     }
 
+    public ReviewResponseDTO findCourtReview(Long courtId, Long userId) {
+        Review review = reviewRepository.findByCourtIdAndUserId(courtId, userId).orElse(null);
+        if (review == null) {
+            return null;
+        }
+
+        User author = review.getUser();
+
+        ReviewResponseDTO response = new ReviewResponseDTO();
+        response.setReviewId(review.getReviewId());
+        response.setContent(review.getBody());
+        response.setEdited(review.isEdited());
+        response.setRating(review.getRating());
+        response.setTotalVotes(review.getVoteCount());
+        response.setAuthorDisplayName(author.getDisplayName());
+        response.setAuthorTrustScore(author.getTrustScore());
+
+        return response;
+    }
+
     public List<ReviewResponseDTO> findCourtReviews(Long courtId, Long userId) {
         List<Review> reviews = reviewRepository.findByCourtId(courtId);
 
@@ -59,7 +80,6 @@ public class ReviewService {
             ReviewResponseDTO response = new ReviewResponseDTO();
             response.setReviewId(review.getReviewId());
             response.setContent(review.getBody());
-            response.setTitle(review.getTitle());
             response.setEdited(review.isEdited());
             response.setRating(review.getRating());
             response.setTotalVotes(review.getVoteCount());
@@ -88,7 +108,7 @@ public class ReviewService {
         Optional<Review> found = reviewRepository.findByCourtIdAndUserId(reviewDTO.getCourtId(), userId);
 
         if (found.isPresent()) {
-            throw new EntityNotFoundException("review", reviewDTO.getCourtId(), userId);
+            throw new EntityAlreadyExistsException("You already have an existing review.");
         }
 
         // Create a new Review entity
@@ -97,36 +117,9 @@ public class ReviewService {
         review.setCourt(court);
         review.setBody(reviewDTO.getBody());
         review.setRating(reviewDTO.getRating());
-        review.setTitle(reviewDTO.getTitle());
         review.setCreatedAt(new Date());  // Automatically set creation date
         review.setPoints(0);  // Default value for points
 
-        reviewRepository.save(review);
-    }
-
-    public void updateReviewTitle(Long courtId, Long userId, String title) {
-        // Fetch user and court entities
-        boolean userExists = userRepository.existsById(userId);
-        if (!userExists) {
-            throw new EntityNotFoundException("user", userId);
-        }
-
-        BasketballCourt court = courtService.getCourt(courtId);
-
-        if (court == null) {
-            throw new EntityNotFoundException("court", courtId);
-        }
-
-        // Check if review already exists
-        Optional<Review> found = reviewRepository.findByCourtIdAndUserId(courtId, userId);
-
-        if (found.isEmpty()) {
-            throw new EntityNotFoundException("review", courtId, userId);
-        }
-
-        Review review = found.get();
-        review.setTitle(title);
-        review.setEdited(true);
         reviewRepository.save(review);
     }
 

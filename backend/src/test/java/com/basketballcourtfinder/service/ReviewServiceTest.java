@@ -3,6 +3,7 @@ package com.basketballcourtfinder.service;
 import com.basketballcourtfinder.dto.ReviewDTO;
 import com.basketballcourtfinder.dto.ReviewResponseDTO;
 import com.basketballcourtfinder.entity.*;
+import com.basketballcourtfinder.exceptions.EntityAlreadyExistsException;
 import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.repository.ReviewRepository;
 import com.basketballcourtfinder.repository.UserRepository;
@@ -16,7 +17,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @RestClientTest(ReviewService.class)
@@ -46,7 +47,6 @@ public class ReviewServiceTest {
         Review review1 = new Review();
         review1.setReviewId(1L);
         review1.setBody("Great court!");
-        review1.setTitle("Amazing Experience");
         review1.setEdited(false);
         review1.setRating(5);
         review1.setVoteCount(10);
@@ -59,7 +59,6 @@ public class ReviewServiceTest {
         Review review2 = new Review();
         review2.setReviewId(2L);
         review2.setBody("Needs maintenance");
-        review2.setTitle("Average");
         review2.setEdited(false);
         review2.setRating(3);
         review2.setVoteCount(5);
@@ -125,7 +124,6 @@ public class ReviewServiceTest {
         Review review1 = new Review();
         review1.setReviewId(1L);
         review1.setBody("Great court!");
-        review1.setTitle("Amazing Experience");
         review1.setEdited(false);
         review1.setRating(5);
         review1.setVoteCount(10);
@@ -220,61 +218,8 @@ public class ReviewServiceTest {
         when(courtService.getCourt(1L)).thenReturn(court);
         when(reviewRepository.findByCourtIdAndUserId(1L, 1L)).thenReturn(Optional.of(new Review()));
 
-        assertThrows(EntityNotFoundException.class, () -> {
+        assertThrows(EntityAlreadyExistsException.class, () -> {
             reviewService.saveReview(reviewDTO, 1L);
-        });
-
-        verify(reviewRepository, never()).save(any(Review.class));
-    }
-
-    @Test
-    public void testUpdateReviewTitle_Success() {
-        Review review = new Review();
-        review.setReviewId(1L);
-        review.setTitle("Original Title");
-
-        when(userRepository.existsById(1L)).thenReturn(true);
-        when(courtService.getCourt(1L)).thenReturn(new BasketballCourt());
-        when(reviewRepository.findByCourtIdAndUserId(1L, 1L)).thenReturn(Optional.of(review));
-        when(reviewRepository.save(any(Review.class))).thenReturn(review);
-
-        reviewService.updateReviewTitle(1L, 1L, "New Title");
-
-        verify(reviewRepository).save(any(Review.class));
-    }
-
-    @Test
-    public void testUpdateReviewTitle_UserNotFound() {
-
-        when(userRepository.existsById(1L)).thenReturn(false);
-
-        assertThrows(EntityNotFoundException.class, () -> {
-            reviewService.updateReviewTitle(1L, 1L, "New Title");
-        });
-
-        verify(reviewRepository, never()).save(any(Review.class));
-    }
-
-    @Test
-    public void testUpdateReviewTitle_CourtNotFound() {
-        when(userRepository.existsById(1L)).thenReturn(true);
-        when(courtService.getCourt(1L)).thenReturn(null);
-
-        assertThrows(EntityNotFoundException.class, () -> {
-            reviewService.updateReviewTitle(1L, 1L, "New Title");
-        });
-
-        verify(reviewRepository, never()).save(any(Review.class));
-    }
-
-    @Test
-    public void testUpdateReviewTitle_ReviewNotFound() {
-        when(userRepository.existsById(1L)).thenReturn(true);
-        when(courtService.getCourt(1L)).thenReturn(new BasketballCourt());
-        when(reviewRepository.findByCourtIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> {
-            reviewService.updateReviewTitle(1L, 1L, "New Title");
         });
 
         verify(reviewRepository, never()).save(any(Review.class));
@@ -458,7 +403,6 @@ public class ReviewServiceTest {
         Review review1 = new Review();
         review1.setReviewId(1L);
         review1.setBody("Great court!");
-        review1.setTitle("Amazing Experience");
         review1.setEdited(false);
         review1.setRating(5);
         review1.setVoteCount(10);
@@ -467,7 +411,6 @@ public class ReviewServiceTest {
         Review review2 = new Review();
         review2.setReviewId(2L);
         review2.setBody("Needs maintenance");
-        review2.setTitle("Average");
         review2.setEdited(false);
         review2.setRating(3);
         review2.setVoteCount(5);
@@ -490,5 +433,51 @@ public class ReviewServiceTest {
         Map map = Map.of("rating", 0.0, "reviews", 0);
 
         assert(Objects.equals(reviewService.getCourtRating(courtId), map));
+    }
+
+    @Test
+    void testFindCourtReview_WhenReviewExists_ShouldReturnReviewResponseDTO() {
+        Long courtId = 1L;
+        Long userId = 1L;
+
+        User user = new User();
+        user.setId(1L);
+        user.setDisplayName("JohnDoe");
+
+        Review review = new Review();
+        review.setReviewId(100L);
+        review.setBody("Great court!");
+        review.setEdited(false);
+        review.setRating(4);
+        review.setVoteCount(20);
+        review.setUser(user);
+        when(reviewRepository.findByCourtIdAndUserId(courtId, userId)).thenReturn(Optional.of(review));
+
+        // Act
+        ReviewResponseDTO response = reviewService.findCourtReview(courtId, userId);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(review.getReviewId(), response.getReviewId());
+        assertEquals(review.getBody(), response.getContent());
+        assertEquals(review.isEdited(), response.isEdited());
+        assertEquals(review.getRating(), response.getRating());
+        assertEquals(review.getVoteCount(), response.getTotalVotes());
+        assertEquals(user.getDisplayName(), response.getAuthorDisplayName());
+        assertEquals(user.getTrustScore(), response.getAuthorTrustScore());
+    }
+
+    @Test
+    void testFindCourtReview_WhenReviewDoesNotExist_ShouldReturnNull() {
+        // Arrange
+        Long courtId = 1L;
+        Long userId = 2L;
+        when(reviewRepository.findByCourtIdAndUserId(courtId, userId)).thenReturn(Optional.empty());
+
+        // Act
+        ReviewResponseDTO response = reviewService.findCourtReview(courtId, userId);
+
+        // Assert
+        assertNull(response);
     }
 }

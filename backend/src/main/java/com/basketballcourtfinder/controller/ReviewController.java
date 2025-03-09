@@ -25,6 +25,20 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getCourtRating(courtId));
     }
 
+    @GetMapping("/single")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> getReview(@RequestParam Long courtId) {
+        // User ID Found from Token
+        Long userId;
+        try {
+            userId = AuthUtil.getAuthenticatedUserId();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+
+        return ResponseEntity.ok(reviewService.findCourtReview(courtId, userId));
+    }
+
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> getReviews(@RequestParam Long courtId) {
@@ -77,12 +91,8 @@ public class ReviewController {
         }
 
         try {
-            if ((review.getTitle() != null && !review.getTitle().isEmpty()) ||
-                    (review.getBody() != null && !review.getBody().isEmpty()) ||
+            if ((review.getBody() != null && !review.getBody().isEmpty()) ||
                     (review.getRating() != null)) {
-                if (review.getTitle() != null && !review.getTitle().isEmpty()) {
-                    reviewService.updateReviewTitle(review.getCourtId(), userId, review.getTitle());
-                }
 
                 if (review.getBody() != null && !review.getBody().isEmpty()) {
                     reviewService.updateReviewBody(review.getCourtId(), userId, review.getBody());

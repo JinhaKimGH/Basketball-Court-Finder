@@ -38,8 +38,6 @@ public class Review {
     @Column(nullable = false)
     private Date createdAt;
 
-    private String title;
-
     @Min(0)
     @Column(nullable = false)
     private int points;
