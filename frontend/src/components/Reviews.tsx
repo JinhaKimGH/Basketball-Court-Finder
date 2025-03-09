@@ -9,7 +9,8 @@ import {
 } from "@/components/ui/menu";
 import { DialogContent, DialogRoot, DialogTrigger } from "@/components/ui/dialog";
 import ReviewForm from "./ReviewForm";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { ReviewData } from "@/interfaces";
 
 export default function Reviews(
   props: {
@@ -20,11 +21,36 @@ export default function Reviews(
 
   const [open, setOpen] = useState(false);
 
-  const [value, setValue] = useState(null); // Get court and display/set button text to edit and be an edit form.
+  const [reviewData, setReviewData] = useState<ReviewData>({otherReviews: []}); // Get court and display/set button text to edit and be an edit form.
 
   const fetchExistingReview = async () => {
-
+    fetch(`${import.meta.env.VITE_APP_API_BASE_URL}/api/review?courtId=${props.courtId}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+    }).then(
+      (res) => {
+        if(res.ok) {
+          return res.json();
+        } else {
+          throw new Error(`HTTP error! status: ${res.status}`)
+        }
+      })
+      .then(async (data) => {
+        setReviewData(data);
+    }).catch((error) => {
+      console.error("Error fetching review data: ", error);
+      //TODO: Replace with newrelic logging
+    })
   }
+
+  // Fetch on component load
+  useEffect(() => {
+    fetchExistingReview();
+  }, [])
   
   return (
     <VStack>
@@ -43,13 +69,22 @@ export default function Reviews(
               <Text
                 color="gray.700"
               >
-                Write a review
+                {reviewData.userReview ?
+                  'Edit your review' 
+                  : 'Write a review'
+                }
               </Text>
             </Button>
           </DialogTrigger>
 
           <DialogContent maxWidth={{base: "80%", md: "500px", lg: "500px"}}>
-            <ReviewForm courtName={props.courtName} courtId={props.courtId} setOpen={setOpen}/>
+            <ReviewForm 
+              courtName={props.courtName} 
+              courtId={props.courtId} 
+              setOpen={setOpen} 
+              existingReview={reviewData?.userReview}
+              setReviewData={setReviewData}
+            />
           </DialogContent>
         </DialogRoot>
         <MenuRoot>

@@ -28,6 +28,24 @@ export interface BasketballCourt {
     indoor: boolean
 }
 
+export interface Review {
+  reviewId: number,
+  content: string,
+  totalVotes: number,
+  authorDisplayName: string,
+  authorTrustScore: number,
+  isUpvoted: boolean,
+  isDownvoted: boolean,
+  createdAt: Date,
+  isEdited: boolean,
+  rating: number
+}
+
+export interface ReviewData {
+  userReview?: Review,
+  otherReviews: Review[]
+}
+
 export interface BackendResponse {
     data: { 
         elements: BasketballCourt[];

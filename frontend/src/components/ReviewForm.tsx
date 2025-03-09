@@ -4,12 +4,15 @@ import { Avatar, Button, Fieldset, Flex, RatingGroup, Text, Textarea } from "@ch
 import { AuthContext } from "@/context/AuthContext";
 import { pickPalette } from "@/utils";
 import { InfoTip } from "./ui/toggle-tip";
+import { Review, ReviewData } from "@/interfaces";
 
 export default function ReviewForm(
   props: {
     courtName : string,
     courtId: number,
     setOpen: React.Dispatch<React.SetStateAction<boolean>>,
+    existingReview?: Review,
+    setReviewData: React.Dispatch<React.SetStateAction<ReviewData>>,
   }
 ) {
   // User Authentication Information
@@ -31,40 +34,74 @@ export default function ReviewForm(
       const values = {...Object.fromEntries(formData.entries()), courtId: props.courtId};
       
       setIsLoading(true);
-      try {
-        const response = await fetch(`${import.meta.env.VITE_APP_API_BASE_URL}/api/review`,
+      if (!props.existingReview) {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_APP_API_BASE_URL}/api/review`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify(values)
+            }
+          );
+  
+          if (response.status == 201) {
+            setIsLoading(false);
+            props.setOpen(false);
+          } else {
+            response.text().then(text => {
+              setIsLoading(false);
+              setErrorMessage(text);
+              throw new Error(text || "Rating fetch issue");
+            })
+          }
+        } catch (e) {
+          console.error("Error posting review:", e);
+        }
+      }
+      else {
+        fetch(`${import.meta.env.VITE_APP_API_BASE_URL}/api/review/${props.existingReview.reviewId}`,
           {
-            method: 'POST',
+            method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
             },
             credentials: 'include',
             body: JSON.stringify(values)
           }
-        );
-
-        if (response.status == 201) {
+        ).then(
+          (res) => {
+            if (res.ok) {
+              return res.json();
+            } else {
+              setIsLoading(false);
+              setErrorMessage("Error updating review.");
+              throw new Error(`HTTP error! status: ${res.status}`)
+            }
+          }
+        ).then(async (data) => {
+          props.setReviewData((prev: ReviewData) => ({ ...prev, userReview: data }))
           setIsLoading(false);
           props.setOpen(false);
-        } else {
-          response.text().then(text => {
-            setIsLoading(false);
-            setErrorMessage(text);
-            throw new Error(text || "Rating fetch issue");
-          })
-        }
-      } catch (e) {
-        console.error("Error posting review:", e);
+        }).catch((e) => {
+          console.error("Error updating review: ", e);
+          //TODO: Replace with newrelic logging
+        });
       }
-
-    }
+    } 
   }
   
   return (
     <form ref={formRef} onSubmit={handleSubmit}>
       <DialogBody p={5} pb={0}>
         <Fieldset.Root invalid>
-          <Fieldset.Legend fontSize={"20px"} fontWeight={300} textAlign={"center"}>{`Add Review to ${props.courtName}`}</Fieldset.Legend>
+          <Fieldset.Legend fontSize={"20px"} fontWeight={300} textAlign={"center"}>
+            {
+              `${props.existingReview ? 'Edit' : 'Add'} Review for ${props.courtName}`
+            }
+          </Fieldset.Legend>
 
           <Fieldset.Content width="100%" justifyContent="space-around" gap={7} mt={7}>
 
@@ -84,6 +121,7 @@ export default function ReviewForm(
               size="lg"
               colorPalette="yellow"
               justifyContent="space-around"
+              defaultValue={props?.existingReview?.rating}
             >
               <RatingGroup.HiddenInput name="rating" />
               <RatingGroup.Control>
@@ -98,6 +136,7 @@ export default function ReviewForm(
             <Textarea
               size="lg"
               name="body"
+              defaultValue={props?.existingReview?.content}
             />
             <Fieldset.ErrorText>
               {errorMessage}
