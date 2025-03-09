@@ -2,13 +2,12 @@ package com.basketballcourtfinder.controller;
 
 import com.basketballcourtfinder.dto.ReviewDTO;
 import com.basketballcourtfinder.dto.ReviewResponseDTO;
+import com.basketballcourtfinder.entity.Review;
 import com.basketballcourtfinder.service.ReviewService;
 import com.basketballcourtfinder.util.AuthUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/review")
@@ -25,20 +24,6 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getCourtRating(courtId));
     }
 
-    @GetMapping("/single")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> getReview(@RequestParam Long courtId) {
-        // User ID Found from Token
-        Long userId;
-        try {
-            userId = AuthUtil.getAuthenticatedUserId();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
-
-        return ResponseEntity.ok(reviewService.findCourtReview(courtId, userId));
-    }
-
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> getReviews(@RequestParam Long courtId) {
@@ -50,8 +35,7 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
 
-        List<ReviewResponseDTO> reviews = reviewService.findCourtReviews(courtId, userId);
-        return ResponseEntity.ok(reviews);
+        return ResponseEntity.ok(reviewService.findCourtReviews(courtId, userId));
     }
 
     @PostMapping()
@@ -75,9 +59,9 @@ public class ReviewController {
         }
     }
 
-    @PutMapping()
+    @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> updateReview(@RequestBody ReviewDTO review) {
+    public ResponseEntity<?> updateReview(@PathVariable long id, @RequestBody ReviewResponseDTO updates) {
         // User ID Found from Token
         Long userId;
         try {
@@ -86,30 +70,11 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
 
-        if (review.getCourtId() == null) {
-            return ResponseEntity.badRequest().body("Court ID is required.");
-        }
-
         try {
-            if ((review.getBody() != null && !review.getBody().isEmpty()) ||
-                    (review.getRating() != null)) {
-
-                if (review.getBody() != null && !review.getBody().isEmpty()) {
-                    reviewService.updateReviewBody(review.getCourtId(), userId, review.getBody());
-                }
-
-                if (review.getRating() != null) {
-                    reviewService.updateReviewRating(review.getCourtId(), userId, review.getRating());
-                }
-
-                return ResponseEntity.ok("Review updated successfully.");
-            } else {
-                return ResponseEntity.badRequest().body("At least one field must not be null or blank.");
-            }
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            Review updatedReview = reviewService.partialUpdate(id, userId, updates);
+            return ResponseEntity.status(HttpStatus.OK).body(updatedReview);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

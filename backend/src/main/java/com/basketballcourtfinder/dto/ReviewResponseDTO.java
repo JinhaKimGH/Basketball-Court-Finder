@@ -16,7 +16,6 @@ public class ReviewResponseDTO {
     private boolean isUpvoted;
     private boolean isDownvoted;
     private Date createdAt;
-    private String title;
     private boolean isEdited;
-    private int rating;
+    private Integer rating;
 }

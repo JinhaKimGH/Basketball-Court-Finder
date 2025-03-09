@@ -44,58 +44,65 @@ public class ReviewServiceTest {
         Long courtId = 123L;
         Long userId = 1L;
 
-        Review review1 = new Review();
-        review1.setReviewId(1L);
-        review1.setBody("Great court!");
-        review1.setEdited(false);
-        review1.setRating(5);
-        review1.setVoteCount(10);
-        review1.setCreatedAt(new Date());
+        Review userReview = new Review();
+        userReview.setReviewId(1L);
+        userReview.setBody("Great court!");
+        userReview.setEdited(false);
+        userReview.setRating(5);
+        userReview.setVoteCount(10);
+        userReview.setCreatedAt(new Date());
 
         User author = new User();
+        author.setId(userId);
         author.setDisplayName("John Doe");
-        review1.setUser(author);
+        userReview.setUser(author);
 
-        Review review2 = new Review();
-        review2.setReviewId(2L);
-        review2.setBody("Needs maintenance");
-        review2.setEdited(false);
-        review2.setRating(3);
-        review2.setVoteCount(5);
-        review2.setCreatedAt(new Date());
-        review2.setUser(author);
+        Review otherReview = new Review();
+        otherReview.setReviewId(2L);
+        otherReview.setBody("Needs maintenance");
+        otherReview.setEdited(false);
+        otherReview.setRating(3);
+        otherReview.setVoteCount(5);
+        otherReview.setCreatedAt(new Date());
 
-        Vote vote1 = new Vote();
-        vote1.setType(VoteType.UPVOTE);
-        vote1.setReview(review1);
+        User otherUser = new User();
+        otherUser.setId(2L);
+        otherUser.setDisplayName("Jane Doe");
+        otherReview.setUser(otherUser);
+
+        Vote vote = new Vote();
+        vote.setType(VoteType.UPVOTE);
+        vote.setReview(userReview);
 
         // Mock repository behavior
-        when(reviewRepository.findByCourtId(courtId)).thenReturn(Arrays.asList(review1, review2));
+        when(reviewRepository.findByCourtId(courtId)).thenReturn(Arrays.asList(userReview, otherReview));
         when(voteRepository.findByUserIdAndReview_ReviewIdIn(eq(userId), anyList()))
-                .thenReturn(Collections.singletonList(vote1));
+                .thenReturn(Collections.singletonList(vote));
 
         // Call service method
-        List<ReviewResponseDTO> response = reviewService.findCourtReviews(courtId, userId);
+        Map<String, Object> response = reviewService.findCourtReviews(courtId, userId);
 
-        // Verify response
-        assertThat(response).hasSize(2);
+        // Validate user review
+        ReviewResponseDTO userReviewDTO = (ReviewResponseDTO) response.get("userReview");
+        assertThat(userReviewDTO).isNotNull();
+        assertThat(userReviewDTO.getReviewId()).isEqualTo(1L);
+        assertThat(userReviewDTO.getContent()).isEqualTo("Great court!");
+        assertThat(userReviewDTO.isUpvoted()).isTrue();
+        assertThat(userReviewDTO.isDownvoted()).isFalse();
+        assertThat(userReviewDTO.getAuthorDisplayName()).isEqualTo("John Doe");
 
-        // Validate first review
-        ReviewResponseDTO reviewResponse1 = response.get(0);
-        assertThat(reviewResponse1.getReviewId()).isEqualTo(1L);
-        assertThat(reviewResponse1.getContent()).isEqualTo("Great court!");
-        assertThat(reviewResponse1.isUpvoted()).isTrue();
-        assertThat(reviewResponse1.isDownvoted()).isFalse();
-        assertThat(reviewResponse1.getAuthorDisplayName()).isEqualTo("John Doe");
+        // Validate other reviews list
+        List<ReviewResponseDTO> otherReviews = (List<ReviewResponseDTO>) response.get("otherReviews");
+        assertThat(otherReviews).hasSize(1);
 
-        // Validate second review
-        ReviewResponseDTO reviewResponse2 = response.get(1);
-        assertThat(reviewResponse2.getReviewId()).isEqualTo(2L);
-        assertThat(reviewResponse2.getContent()).isEqualTo("Needs maintenance");
-        assertThat(reviewResponse2.isUpvoted()).isFalse();
-        assertThat(reviewResponse2.isDownvoted()).isFalse();
+        ReviewResponseDTO otherReviewDTO = otherReviews.get(0);
+        assertThat(otherReviewDTO.getReviewId()).isEqualTo(2L);
+        assertThat(otherReviewDTO.getContent()).isEqualTo("Needs maintenance");
+        assertThat(otherReviewDTO.isUpvoted()).isFalse();
+        assertThat(otherReviewDTO.isDownvoted()).isFalse();
+        assertThat(otherReviewDTO.getAuthorDisplayName()).isEqualTo("Jane Doe");
 
-        // Verify interactions
+        // Verify repository calls
         verify(reviewRepository, times(1)).findByCourtId(courtId);
         verify(voteRepository, times(1)).findByUserIdAndReview_ReviewIdIn(eq(userId), anyList());
     }
@@ -108,10 +115,16 @@ public class ReviewServiceTest {
         when(reviewRepository.findByCourtId(courtId)).thenReturn(Collections.emptyList());
 
         // Act
-        List<ReviewResponseDTO> result = reviewService.findCourtReviews(courtId, userId);
+        Map<String, Object> result = reviewService.findCourtReviews(courtId, userId);
+        Object userReviewObj = result.get("userReview");
+        Optional<ReviewResponseDTO> userReview = userReviewObj instanceof Optional
+                ? (Optional<ReviewResponseDTO>) userReviewObj
+                : Optional.empty();
 
         // Assert
-        assertThat(result.isEmpty());
+        assertThat(userReview).isEmpty();
+        assertThat(((List<?>) result.get("otherReviews")).isEmpty()).isTrue();
+
         verify(reviewRepository).findByCourtId(courtId);
         verify(voteRepository, never()).findByUserIdAndReview_ReviewIdIn(anyLong(), anyList());
     }
@@ -121,35 +134,42 @@ public class ReviewServiceTest {
         Long courtId = 123L;
         Long userId = 1L;
 
-        Review review1 = new Review();
-        review1.setReviewId(1L);
-        review1.setBody("Great court!");
-        review1.setEdited(false);
-        review1.setRating(5);
-        review1.setVoteCount(10);
-        review1.setCreatedAt(new Date());
+        Review userReview = new Review();
+        userReview.setReviewId(1L);
+        userReview.setBody("Great court!");
+        userReview.setEdited(false);
+        userReview.setRating(5);
+        userReview.setVoteCount(10);
+        userReview.setCreatedAt(new Date());
 
         User author = new User();
+        author.setId(userId);
         author.setDisplayName("John Doe");
-        review1.setUser(author);
+        userReview.setUser(author);
 
         // Mock repository behavior
-        when(reviewRepository.findByCourtId(courtId)).thenReturn(Collections.singletonList(review1));
+        when(reviewRepository.findByCourtId(courtId)).thenReturn(Collections.singletonList(userReview));
         when(voteRepository.findByUserIdAndReview_ReviewIdIn(eq(userId), anyList()))
                 .thenReturn(Collections.emptyList());
 
         // Call service method
-        List<ReviewResponseDTO> response = reviewService.findCourtReviews(courtId, userId);
+        Map<String, Object> response = reviewService.findCourtReviews(courtId, userId);
 
-        // Verify response
-        assertThat(response).hasSize(1);
-        assertThat(response.get(0).isUpvoted()).isFalse();
-        assertThat(response.get(0).isDownvoted()).isFalse();
+        // Validate user review
+        ReviewResponseDTO userReviewDTO = (ReviewResponseDTO) response.get("userReview");
+        assertThat(userReviewDTO).isNotNull();
+        assertThat(userReviewDTO.isUpvoted()).isFalse();
+        assertThat(userReviewDTO.isDownvoted()).isFalse();
+
+        // Validate other reviews list
+        List<ReviewResponseDTO> otherReviews = (List<ReviewResponseDTO>) response.get("otherReviews");
+        assertThat(otherReviews.isEmpty()).isTrue();
 
         // Verify interactions
         verify(reviewRepository, times(1)).findByCourtId(courtId);
         verify(voteRepository, times(1)).findByUserIdAndReview_ReviewIdIn(eq(userId), anyList());
     }
+
 
     @Test
     public void testSaveReview() {
@@ -226,105 +246,68 @@ public class ReviewServiceTest {
     }
 
     @Test
-    public void testUpdateReviewBody_Success() {
+    public void testPatchReviewBody_Success() throws Exception {
+        User user = new User();
+        user.setId(1L);
         Review review = new Review();
+        review.setUser(user);
         review.setReviewId(1L);
         review.setBody("Original Body");
 
-        when(userRepository.existsById(1L)).thenReturn(true);
-        when(courtService.getCourt(1L)).thenReturn(new BasketballCourt());
-        when(reviewRepository.findByCourtIdAndUserId(1L, 1L)).thenReturn(Optional.of(review));
+        when(reviewRepository.findById(1L)).thenReturn(Optional.of(review));
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
 
-        reviewService.updateReviewBody(1L, 1L, "New Body");
+        ReviewResponseDTO updates = new ReviewResponseDTO();
+        updates.setContent("New Body");
+
+        reviewService.partialUpdate(1L, 1L, updates);
 
         verify(reviewRepository).save(any(Review.class));
     }
 
     @Test
-    public void testUpdateReviewBody_UserNotFound() {
+    public void testPatchReviewBody_ReviewNotFound() throws Exception {
+        when(reviewRepository.findById(1L)).thenReturn(Optional.empty());
 
-        when(userRepository.existsById(1L)).thenReturn(false);
+        ReviewResponseDTO updates = new ReviewResponseDTO();
+        updates.setContent("New Body");
 
         assertThrows(EntityNotFoundException.class, () -> {
-            reviewService.updateReviewBody(1L, 1L, "New Body");
+            reviewService.partialUpdate(1L, 1L, updates);
         });
 
         verify(reviewRepository, never()).save(any(Review.class));
     }
 
     @Test
-    public void testUpdateReviewBody_CourtNotFound() {
-        when(userRepository.existsById(1L)).thenReturn(true);
-        when(courtService.getCourt(1L)).thenReturn(null);
-
-        assertThrows(EntityNotFoundException.class, () -> {
-            reviewService.updateReviewBody(1L, 1L, "New Body");
-        });
-
-        verify(reviewRepository, never()).save(any(Review.class));
-    }
-
-    @Test
-    public void testUpdateReviewBody_ReviewNotFound() {
-        when(userRepository.existsById(1L)).thenReturn(true);
-        when(courtService.getCourt(1L)).thenReturn(new BasketballCourt());
-        when(reviewRepository.findByCourtIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> {
-            reviewService.updateReviewBody(1L, 1L, "New Body");
-        });
-
-        verify(reviewRepository, never()).save(any(Review.class));
-    }
-
-    @Test
-    public void testUpdateReviewRating_Success() {
+    public void testPatchReviewRating_Success() throws Exception {
+        User user = new User();
+        user.setId(1L);
         Review review = new Review();
+        review.setUser(user);
         review.setReviewId(1L);
         review.setRating(3);
 
-        when(userRepository.existsById(1L)).thenReturn(true);
-        when(courtService.getCourt(1L)).thenReturn(new BasketballCourt());
-        when(reviewRepository.findByCourtIdAndUserId(1L, 1L)).thenReturn(Optional.of(review));
+        when(reviewRepository.findById(1L)).thenReturn(Optional.of(review));
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
 
-        reviewService.updateReviewRating(1L, 1L, 5);
+        ReviewResponseDTO updates = new ReviewResponseDTO();
+        updates.setRating(5);
+
+        reviewService.partialUpdate(1L, 1L, updates);
 
         verify(reviewRepository).save(any(Review.class));
     }
 
     @Test
-    public void testUpdateReviewRating_UserNotFound() {
-        when(userRepository.existsById(1L)).thenReturn(false);
+    public void testPatchReviewRating_ReviewNotFound() throws Exception {
+        when(reviewRepository.findById(1L)).thenReturn(Optional.empty());
+
+        ReviewResponseDTO updates = new ReviewResponseDTO();
+        updates.setRating(5);
 
         assertThrows(EntityNotFoundException.class, () -> {
-            reviewService.updateReviewRating(1L, 1L, 5);
-        });
-
-        verify(reviewRepository, never()).save(any(Review.class));
-    }
-
-    @Test
-    public void testUpdateReviewRating_CourtNotFound() {
-        when(userRepository.existsById(1L)).thenReturn(true);
-        when(courtService.getCourt(1L)).thenReturn(null);
-
-        assertThrows(EntityNotFoundException.class, () -> {
-            reviewService.updateReviewRating(1L, 1L, 5);
-        });
-
-        verify(reviewRepository, never()).save(any(Review.class));
-    }
-
-    @Test
-    public void testUpdateReviewRating_ReviewNotFound() {
-        when(userRepository.existsById(1L)).thenReturn(true);
-        when(courtService.getCourt(1L)).thenReturn(new BasketballCourt());
-        when(reviewRepository.findByCourtIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> {
-            reviewService.updateReviewRating(1L, 1L, 5);
+            reviewService.partialUpdate(1L, 1L, updates);
         });
 
         verify(reviewRepository, never()).save(any(Review.class));
@@ -433,51 +416,5 @@ public class ReviewServiceTest {
         Map map = Map.of("rating", 0.0, "reviews", 0);
 
         assert(Objects.equals(reviewService.getCourtRating(courtId), map));
-    }
-
-    @Test
-    void testFindCourtReview_WhenReviewExists_ShouldReturnReviewResponseDTO() {
-        Long courtId = 1L;
-        Long userId = 1L;
-
-        User user = new User();
-        user.setId(1L);
-        user.setDisplayName("JohnDoe");
-
-        Review review = new Review();
-        review.setReviewId(100L);
-        review.setBody("Great court!");
-        review.setEdited(false);
-        review.setRating(4);
-        review.setVoteCount(20);
-        review.setUser(user);
-        when(reviewRepository.findByCourtIdAndUserId(courtId, userId)).thenReturn(Optional.of(review));
-
-        // Act
-        ReviewResponseDTO response = reviewService.findCourtReview(courtId, userId);
-
-        // Assert
-        assertNotNull(response);
-        assertEquals(review.getReviewId(), response.getReviewId());
-        assertEquals(review.getBody(), response.getContent());
-        assertEquals(review.isEdited(), response.isEdited());
-        assertEquals(review.getRating(), response.getRating());
-        assertEquals(review.getVoteCount(), response.getTotalVotes());
-        assertEquals(user.getDisplayName(), response.getAuthorDisplayName());
-        assertEquals(user.getTrustScore(), response.getAuthorTrustScore());
-    }
-
-    @Test
-    void testFindCourtReview_WhenReviewDoesNotExist_ShouldReturnNull() {
-        // Arrange
-        Long courtId = 1L;
-        Long userId = 2L;
-        when(reviewRepository.findByCourtIdAndUserId(courtId, userId)).thenReturn(Optional.empty());
-
-        // Act
-        ReviewResponseDTO response = reviewService.findCourtReview(courtId, userId);
-
-        // Assert
-        assertNull(response);
     }
 }

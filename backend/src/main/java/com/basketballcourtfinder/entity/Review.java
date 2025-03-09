@@ -31,7 +31,7 @@ public class Review {
 
     private String body;
 
-    @Min(1) @Max(5)
+    @Min(0) @Max(5)
     @Column(nullable = false)
     private int rating;
 

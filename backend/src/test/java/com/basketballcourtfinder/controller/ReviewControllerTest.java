@@ -2,10 +2,10 @@ package com.basketballcourtfinder.controller;
 
 import com.basketballcourtfinder.dto.ReviewDTO;
 import com.basketballcourtfinder.dto.ReviewResponseDTO;
+import com.basketballcourtfinder.entity.Review;
 import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.service.ReviewService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -20,18 +20,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.*;
 
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
@@ -63,28 +54,51 @@ public class ReviewControllerTest {
 
         long courtId = 1L;
         long userId = 1L;
-        List<ReviewResponseDTO> reviews = new ArrayList<>();
-        ReviewResponseDTO review = new ReviewResponseDTO();
-        review.setReviewId(1L);
-        review.setRating(5);
-        review.setContent("Great court!");
-        review.setTotalVotes(10);
-        review.setAuthorDisplayName("Test User");
-        review.setAuthorTrustScore(100);
-        review.setUpvoted(true);
-        review.setDownvoted(false);
-        review.setCreatedAt(new Date());
-        review.setEdited(false);
-        reviews.add(review);
 
-        when(reviewService.findCourtReviews(courtId, userId)).thenReturn(reviews);
+        // Create a mock user review
+        ReviewResponseDTO userReview = new ReviewResponseDTO();
+        userReview.setReviewId(1L);
+        userReview.setRating(5);
+        userReview.setContent("Great court!");
+        userReview.setTotalVotes(10);
+        userReview.setAuthorDisplayName("Test User");
+        userReview.setAuthorTrustScore(100);
+        userReview.setUpvoted(true);
+        userReview.setDownvoted(false);
+        userReview.setCreatedAt(new Date());
+        userReview.setEdited(false);
+
+        // Create a list for other reviews
+        List<ReviewResponseDTO> otherReviews = new ArrayList<>();
+        ReviewResponseDTO otherReview = new ReviewResponseDTO();
+        otherReview.setReviewId(2L);
+        otherReview.setRating(4);
+        otherReview.setContent("Decent court.");
+        otherReview.setTotalVotes(5);
+        otherReview.setAuthorDisplayName("Another User");
+        otherReview.setAuthorTrustScore(80);
+        otherReview.setUpvoted(false);
+        otherReview.setDownvoted(false);
+        otherReview.setCreatedAt(new Date());
+        otherReview.setEdited(false);
+        otherReviews.add(otherReview);
+
+        // Mock the service response
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("userReview", userReview);
+        responseMap.put("otherReviews", otherReviews);
+
+        when(reviewService.findCourtReviews(courtId, userId)).thenReturn(responseMap);
 
         mockMvc.perform(get("/api/review")
-                .param("courtId", String.valueOf(courtId)))
+                        .param("courtId", String.valueOf(courtId)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].reviewId").value(1L))
-                .andExpect(jsonPath("$[0].rating").value(5))
-                .andExpect(jsonPath("$[0].content").value("Great court!"));
+                .andExpect(jsonPath("$.userReview.reviewId").value(1L))
+                .andExpect(jsonPath("$.userReview.rating").value(5))
+                .andExpect(jsonPath("$.userReview.content").value("Great court!"))
+                .andExpect(jsonPath("$.otherReviews[0].reviewId").value(2L))
+                .andExpect(jsonPath("$.otherReviews[0].rating").value(4))
+                .andExpect(jsonPath("$.otherReviews[0].content").value("Decent court."));
     }
 
     @Test
@@ -176,11 +190,12 @@ public class ReviewControllerTest {
     }
 
     @Test
-    public void testPutReviewSuccessAll() throws Exception {
+    public void testPatchReviewSuccessAll() throws Exception {
         setup_authUser();
-        long courtId = 1L;
+        long reviewId = 1L;
         long userId = 1L;
 
+        // Creating the ReviewDTO with both body and rating
         ReviewDTO review = new ReviewDTO();
         review.setCourtId(1L);
         review.setRating(5);
@@ -188,101 +203,96 @@ public class ReviewControllerTest {
 
         String reviewJson = new ObjectMapper().writeValueAsString(review);
 
-        doNothing().when(reviewService).updateReviewBody(courtId, userId, "Great court!");
-        doNothing().when(reviewService).updateReviewRating(courtId, userId, 5);
+        // Mocking the service method to simulate partial update behavior
+        doReturn(new Review()).when(reviewService).partialUpdate(eq(reviewId), eq(userId), any(ReviewResponseDTO.class));
 
-        mockMvc.perform(put("/api/review")
+        // Performing the PATCH request
+        mockMvc.perform(patch("/api/review/{reviewId}", reviewId)
                         .contentType("application/json")
                         .content(reviewJson))
                 .andExpect(status().isOk());
+
+        // Verifying interactions with the service
+        verify(reviewService).partialUpdate(eq(reviewId), eq(userId), any(ReviewResponseDTO.class));
     }
 
     @Test
-    public void testPutReviewSuccessBody() throws Exception {
+    public void testPatchReviewSuccessBody() throws Exception {
         setup_authUser();
-        long courtId = 1L;
+        long reviewId = 1L;
         long userId = 1L;
 
+        // Creating the ReviewDTO with only body
         ReviewDTO review = new ReviewDTO();
         review.setCourtId(1L);
         review.setBody("Great court!");
 
         String reviewJson = new ObjectMapper().writeValueAsString(review);
 
-        doNothing().when(reviewService).updateReviewBody(courtId, userId, "Great court!");
+        // Mocking the service method to simulate partial update behavior
+        doReturn(new Review()).when(reviewService).partialUpdate(eq(reviewId), eq(userId), any(ReviewResponseDTO.class));
 
-        mockMvc.perform(put("/api/review")
-                .contentType("application/json")
-                .content(reviewJson))
+        // Performing the PATCH request
+        mockMvc.perform(patch("/api/review/{reviewId}", reviewId)
+                        .contentType("application/json")
+                        .content(reviewJson))
                 .andExpect(status().isOk());
 
-        verify(reviewService).updateReviewBody(courtId, userId, "Great court!");
-        verify(reviewService, never()).updateReviewRating(courtId, userId, 5);
+        // Verifying interactions with the service
+        verify(reviewService).partialUpdate(eq(reviewId), eq(userId), any(ReviewResponseDTO.class));
     }
 
     @Test
-    public void testPutReviewSuccessRating() throws Exception {
+    public void testPatchReviewSuccessRating() throws Exception {
         setup_authUser();
-        long courtId = 1L;
+        long reviewId = 1L;
         long userId = 1L;
 
+        // Creating the ReviewDTO with only rating
         ReviewDTO review = new ReviewDTO();
         review.setCourtId(1L);
         review.setRating(5);
 
         String reviewJson = new ObjectMapper().writeValueAsString(review);
 
-        doNothing().when(reviewService).updateReviewRating(courtId, userId, 5);
+        // Mocking the service method to simulate partial update behavior
+        doReturn(new Review()).when(reviewService).partialUpdate(eq(reviewId), eq(userId), any(ReviewResponseDTO.class));
 
-        mockMvc.perform(put("/api/review")
-                .contentType("application/json")
-                .content(reviewJson))
+        // Performing the PATCH request
+        mockMvc.perform(patch("/api/review/{reviewId}", reviewId)
+                        .contentType("application/json")
+                        .content(reviewJson))
                 .andExpect(status().isOk());
 
-        verify(reviewService).updateReviewRating(courtId, userId, 5);
-        verify(reviewService, never()).updateReviewBody(courtId, userId, "Great court!");
+        // Verifying interactions with the service
+        verify(reviewService).partialUpdate(eq(reviewId), eq(userId), any(ReviewResponseDTO.class));
     }
 
     @Test
-    public void testPutReviewBadRequest() throws Exception {
+    public void testPatchReviewFailedNotFound() throws Exception {
         setup_authUser();
-
-        ReviewDTO review = new ReviewDTO();
-        review.setCourtId(1L);
-
-        String reviewJson = new ObjectMapper().writeValueAsString(review);
-
-        mockMvc.perform(put("/api/review")
-                .contentType("application/json")
-                .content(reviewJson))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("At least one field must not be null or blank."));
-
-        verify(reviewService, never()).updateReviewRating(anyLong(), anyLong(), anyInt());
-        verify(reviewService, never()).updateReviewBody(anyLong(), anyLong(), anyString());
-    }
-
-    @Test
-    public void testPutReviewFailedNotFound() throws Exception {
-        setup_authUser();
-        long courtId = 1L;
+        long reviewId = 1L;
         long userId = 1L;
 
+        // Creating the ReviewDTO with both body and rating
         ReviewDTO review = new ReviewDTO();
         review.setCourtId(1L);
         review.setBody("Great court!");
+        review.setRating(5);
 
         String reviewJson = new ObjectMapper().writeValueAsString(review);
 
-        doThrow(new EntityNotFoundException("review", 1L)).when(reviewService).updateReviewBody(courtId, userId,
-                "Great court!");
+        // Mocking the service method to throw an exception when review is not found
+        doThrow(new EntityNotFoundException("review", reviewId)).when(reviewService).partialUpdate(eq(reviewId), eq(userId), any(ReviewResponseDTO.class));
 
-        mockMvc.perform(put("/api/review")
-                .contentType("application/json")
-                .content(reviewJson))
-                .andExpect(status().isNotFound())
+        // Performing the PATCH request
+        mockMvc.perform(patch("/api/review/{reviewId}", reviewId)
+                        .contentType("application/json")
+                        .content(reviewJson))
+                .andExpect(status().isBadRequest())
                 .andExpect(content().string("review with ID 1 not found"));
     }
+
 
     @Test
     public void testDeleteReviewSuccess() throws Exception {
@@ -355,39 +365,4 @@ public class ReviewControllerTest {
                 .andExpect(jsonPath("rating").value(5))
                 .andExpect(jsonPath("reviews").value(1));
     }
-
-    @Test
-    public void testReviewRetrievalAuthFail() throws Exception {
-        mockMvc.perform(get("/api/review/single")
-                        .param("courtId", String.valueOf(1L)))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    public void testReviewRetrievalSuccess() throws Exception {
-        setup_authUser();
-        Long mockCourtId = 1L;
-
-        ReviewResponseDTO review = new ReviewResponseDTO();
-        review.setReviewId(1L);
-        review.setRating(5);
-        review.setContent("Great court!");
-        review.setTotalVotes(10);
-        review.setAuthorDisplayName("Test User");
-        review.setAuthorTrustScore(100);
-        review.setUpvoted(true);
-        review.setDownvoted(false);
-        review.setCreatedAt(new Date());
-        review.setEdited(false);
-
-        when(reviewService.findCourtReview(mockCourtId, 1L)).thenReturn(review);
-
-        mockMvc.perform(get("/api/review/single")
-                        .param("courtId", String.valueOf(mockCourtId)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.reviewId").value(1L))
-                .andExpect(jsonPath("$.rating").value(5))
-                .andExpect(jsonPath("$.content").value("Great court!"));
-    }
-
 }
