@@ -1,7 +1,8 @@
 import { BasketballCourt } from "@/interfaces"
 import { Container, Flex, Heading, RatingGroup, Text, Tabs, CloseButton } from "@chakra-ui/react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import CourtOverview from "./CourtOverview";
+import Reviews from "./Reviews";
 
 export default function CourtCard(
   props: {
@@ -12,9 +13,39 @@ export default function CourtCard(
   }
 ) : JSX.Element{
   const [ratingStats, setRatingStats] = useState({
-    rating: 4.4,
-    reviews: 873
+    rating: 0,
+    reviews: 0
   });
+
+  const baseApiUrl = import.meta.env.VITE_APP_API_BASE_URL;
+
+  const fetchRatings = async () => {
+    try {
+      const response = await fetch(
+        `${baseApiUrl}/api/review/rating?courtId=${props.court.id}`, 
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        }
+      );
+
+      if(response.ok) {
+        const obj = await response.json();
+        setRatingStats(obj);
+      } else {
+        throw new Error("Rating fetch issue")
+      }
+    } catch (e) {
+      console.error("Error fetching rating:", e); //TODO: NewRelic logging
+    }
+  };
+
+  useEffect(() => {
+    fetchRatings();
+  }, [props.court])
 
   return (
     <Container
@@ -40,7 +71,7 @@ export default function CourtCard(
         </Heading>
         <RatingGroup.Root 
           count={5} 
-          defaultValue={Math.round(ratingStats.rating * 2) / 2}
+          value={Math.round(ratingStats.rating * 2) / 2}
           colorPalette={"yellow"}
           size={"xs"}
           allowHalf
@@ -81,7 +112,9 @@ export default function CourtCard(
         <Tabs.Content value="overview">
           <CourtOverview court={props.court} setCourts={props.setCourts} index={props.index}/>
         </Tabs.Content>
-        <Tabs.Content value="reviews">Manage your projects</Tabs.Content>
+        <Tabs.Content value="reviews">
+          <Reviews courtName={props.court.name || "Unnamed Court"} courtId={props.court.id}/>
+        </Tabs.Content>
       </Tabs.Root>
     </Container> 
   )

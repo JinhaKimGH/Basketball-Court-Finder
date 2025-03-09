@@ -91,7 +91,7 @@ export default function CourtEditForm(
           );
           setShowSuccess(true);
           
-          // Auto hide after 3 seconds and close dialog
+          // Auto hide after 3 seconds
           successTimeoutRef.current = window.setTimeout(() => {
             setShowSuccess(false);
           }, 3000);

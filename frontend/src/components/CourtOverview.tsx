@@ -8,7 +8,7 @@ import { RiMapPin4Line } from "react-icons/ri";
 import { AiOutlineColumnHeight } from "react-icons/ai";
 import { FaPersonArrowDownToLine } from "react-icons/fa6";
 import { MdOutlineDriveFileRenameOutline } from "react-icons/md";
-import { DialogContent, DialogRoot, DialogTrigger } from "./ui/dialog";
+import { DialogContent, DialogRoot, DialogTrigger } from "@/components/ui/dialog";
 import CourtEditForm, { FieldType } from "./CourtEditForm";
 
 export default function CourtOverview(
