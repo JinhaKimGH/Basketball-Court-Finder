@@ -11,6 +11,7 @@ import { DialogContent, DialogRoot, DialogTrigger } from "@/components/ui/dialog
 import ReviewForm from "./ReviewForm";
 import { useEffect, useState } from "react";
 import { ReviewData } from "@/interfaces";
+import ReviewCard from "./ReviewCard";
 
 export default function Reviews(
   props: {
@@ -21,7 +22,18 @@ export default function Reviews(
 
   const [open, setOpen] = useState(false);
 
-  const [reviewData, setReviewData] = useState<ReviewData>({otherReviews: []}); // Get court and display/set button text to edit and be an edit form.
+  const [reviewData, setReviewData] = useState<ReviewData>({otherReviews: [{
+    reviewId: 1,
+    content: "I love this court!",
+    totalVotes: 5,
+    authorDisplayName: "Jeff",
+    authorTrustScore: 52,
+    isUpvoted: true,
+    isDownvoted: false,
+    createdAt: new Date(),
+    isEdited: true,
+    rating: 5
+  }]}); // Get court and display/set button text to edit and be an edit form.
 
   const fetchExistingReview = async () => {
     fetch(`${import.meta.env.VITE_APP_API_BASE_URL}/api/review?courtId=${props.courtId}`,
@@ -115,6 +127,11 @@ export default function Reviews(
           </MenuContent>
         </MenuRoot>
       </Flex>
+
+      {reviewData.otherReviews.map(review => (
+        <ReviewCard key={review.reviewId} review={review}/>
+      ))}
+      
     </VStack>
   )
 }

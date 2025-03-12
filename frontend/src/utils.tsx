@@ -63,3 +63,33 @@ export function trustSymbol(trust: number) {
     </Tooltip>
   )
 }
+
+export function timeAgo(date : Date) {
+  const now = new Date();
+  const providedDate = new Date(date);
+  const diffInMs = now.getTime() - providedDate.getTime();
+  
+  if (diffInMs < 0) {
+      return "Invalid date";
+  }
+  
+  const dayInMs = 1000 * 60 * 60 * 24;
+  const weekInMs = dayInMs * 7;
+  const monthInMs = dayInMs * 30;
+  const yearInMs = dayInMs * 365;
+  
+  const days = Math.floor(diffInMs / dayInMs);
+  const weeks = Math.floor(diffInMs / weekInMs);
+  const months = Math.floor(diffInMs / monthInMs);
+  const years = Math.floor(diffInMs / yearInMs);
+  
+  if (days < 1) return "today";
+  if (days === 1) return "a day ago";
+  if (days < 7) return `${days} days ago`;
+  if (days === 7) return 'a week ago';
+  if (weeks < 4) return `${weeks} weeks ago`;
+  if (weeks === 4) return 'a month ago';
+  if (months < 12) return `${months} months ago`;
+  if (months === 12) return 'a year ago';
+  return `${years} years ago`;
+}
