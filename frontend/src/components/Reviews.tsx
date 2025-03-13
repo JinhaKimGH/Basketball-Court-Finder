@@ -28,8 +28,8 @@ export default function Reviews(
     totalVotes: 5,
     authorDisplayName: "Jeff",
     authorTrustScore: 52,
-    isUpvoted: true,
-    isDownvoted: false,
+    upvoted: true,
+    downvoted: false,
     createdAt: new Date(),
     isEdited: true,
     rating: 5
@@ -62,7 +62,7 @@ export default function Reviews(
   // Fetch on component load
   useEffect(() => {
     fetchExistingReview();
-  }, [])
+  }, [props.courtId])
   
   return (
     <VStack>
@@ -128,8 +128,12 @@ export default function Reviews(
         </MenuRoot>
       </Flex>
 
+      { reviewData.userReview &&
+        <ReviewCard review={reviewData.userReview} setReviewData={setReviewData} isUserReview/>
+      }
+
       {reviewData.otherReviews.map(review => (
-        <ReviewCard key={review.reviewId} review={review}/>
+        <ReviewCard key={review.reviewId} review={review} setReviewData={setReviewData} isUserReview={false}/>
       ))}
       
     </VStack>

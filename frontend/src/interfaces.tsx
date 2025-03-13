@@ -34,8 +34,8 @@ export interface Review {
   totalVotes: number,
   authorDisplayName: string,
   authorTrustScore: number,
-  isUpvoted: boolean,
-  isDownvoted: boolean,
+  upvoted: boolean,
+  downvoted: boolean,
   createdAt: Date,
   isEdited: boolean,
   rating: number

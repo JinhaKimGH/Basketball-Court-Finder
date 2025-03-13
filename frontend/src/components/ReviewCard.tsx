@@ -1,4 +1,4 @@
-import { Review } from "@/interfaces";
+import { Review, ReviewData } from "@/interfaces";
 import { pickPalette, timeAgo } from "@/utils";
 import { Box, Flex, Text, Avatar, RatingGroup, Icon } from "@chakra-ui/react";
 import { LuChevronDown, LuChevronUp } from "react-icons/lu";
@@ -6,34 +6,71 @@ import { LuChevronDown, LuChevronUp } from "react-icons/lu";
 
 export default function ReviewCard(
   props: {
-    review: Review
+    isUserReview: boolean,
+    review: Review,
+    setReviewData: React.Dispatch<React.SetStateAction<ReviewData>>
   }
 ) {
-  const {review} = props;
+  const {isUserReview, review, setReviewData} = props;
 
-  const addVote = async (isUpvote : boolean) => {
-    // add state setting
+  const handleVote = async (targetVote: 'up' | 'down' | 'remove') => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_APP_API_BASE_URL}/api/${review.reviewId}/${
-        isUpvote ? "upvote" : "downvote"}`,
+      const endpoint = targetVote === 'remove' 
+        ? `${review.reviewId}`
+        : `${review.reviewId}/${targetVote === 'up' ? 'upvote' : 'downvote'}`;
+      
+      const response = await fetch(
+        `${import.meta.env.VITE_APP_API_BASE_URL}/api/vote/${endpoint}`,
         {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          method: targetVote === 'remove' ? 'DELETE' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
         }
       );
-
+  
       if (!response.ok) {
-        response.text().then(text => {
-          throw new Error(text || 'Voting issue');
-        });
+        const text = await response.text();
+        throw new Error(text || 'Voting issue');
       }
-    } catch(e) {
-      console.error("Error voting on review:", e)
+  
+      setReviewData(prev => ({
+        ...prev,
+        otherReviews: prev.otherReviews.map(r => {
+          if (r.reviewId !== review.reviewId) return r;
+  
+          let voteDelta = 0;
+          
+          // Case 1: Removing an existing vote
+          if (targetVote === 'remove') {
+            if (r.upvoted) voteDelta = -1;
+            if (r.downvoted) voteDelta = 1;
+          }
+          // Case 2: Adding a new vote where none existed
+          else if (!r.upvoted && !r.downvoted) {
+            voteDelta = targetVote === 'up' ? 1 : -1;
+          }
+          // Case 3: Switching from upvote to downvote
+          else if (r.upvoted && targetVote === 'down') {
+            voteDelta = -2; // Remove upvote (-1) and add downvote (-1)
+          }
+          // Case 4: Switching from downvote to upvote
+          else if (r.downvoted && targetVote === 'up') {
+            voteDelta = 2; // Remove downvote (+1) and add upvote (+1)
+          }
+  
+          return {
+            ...r,
+            upvoted: targetVote === 'up',
+            downvoted: targetVote === 'down',
+            totalVotes: r.totalVotes + voteDelta
+          };
+        })
+      }));
+    } catch (e) {
+      console.error("Error voting on review:", e);
     }
-  }
+  };
+
   return (
     <Box
       width="100%"
@@ -112,22 +149,30 @@ export default function ReviewCard(
         <Icon
           as={LuChevronUp}
           boxSize="20px"
-          color={review.isUpvoted ? "#08d408" : "rgb(94, 94, 94)"}
-          cursor="pointer"
+          color={review.upvoted ? "#08d408" : "rgb(94, 94, 94)"}
+          cursor={!isUserReview ? "pointer" : "default"}
           opacity={1}
           _hover={{
             opacity: 0.6
+          }}
+          onClick={() => {
+            if (isUserReview) return;
+            handleVote(review.upvoted ? 'remove' : 'up');
           }}
         />
         <Text fontSize="14px">{review.totalVotes}</Text>
         <Icon
           as={LuChevronDown}
           boxSize="20px"
-          color={review.isDownvoted ? "#d40808" : "rgb(94, 94, 94)"}
-          cursor="pointer"
+          color={review.downvoted ? "#d40808" : "rgb(94, 94, 94)"}
+          cursor={!isUserReview ? "pointer" : "default"}
           opacity={1}
           _hover={{
             opacity: 0.6
+          }}
+          onClick={() => {
+            if (isUserReview) return;
+            handleVote(review.downvoted ? 'remove' : 'down');
           }}
         />
       </Flex>
