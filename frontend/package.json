@@ -27,6 +27,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
+    "react-intersection-observer": "^9.16.0",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^7.1.5",
     "use-mask-input": "^3.4.2"
