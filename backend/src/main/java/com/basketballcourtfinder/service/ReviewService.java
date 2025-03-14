@@ -3,6 +3,7 @@ package com.basketballcourtfinder.service;
 import com.basketballcourtfinder.dto.ReviewDTO;
 import com.basketballcourtfinder.dto.ReviewResponseDTO;
 import com.basketballcourtfinder.entity.*;
+import com.basketballcourtfinder.enums.SortMethod;
 import com.basketballcourtfinder.exceptions.EntityAlreadyExistsException;
 import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.repository.ReviewRepository;
@@ -58,11 +59,29 @@ public class ReviewService {
         return response;
     }
 
-    public Map<String, Object> findCourtReviews(Long courtId, Long userId) {
+    public Map<String, Object> findCourtReviews(Long courtId,
+                                                Long userId,
+                                                Integer page,
+                                                Integer reviewPerPage,
+                                                SortMethod sortMethod
+    ) {
         List<Review> reviews = reviewRepository.findByCourtId(courtId);
 
         if (reviews.isEmpty()) {
             return Map.of("userReview", Optional.empty(), "otherReviews", Collections.emptyList());
+        }
+
+        // Sort reviews based on the selected sort method
+        switch (sortMethod) {
+            case NEWEST:
+                reviews.sort(Comparator.comparing(Review::getCreatedAt).reversed()); // Sort by newest date
+                break;
+            case HIGHEST:
+                reviews.sort(Comparator.comparing(Review::getRating).reversed()); // Sort by highest rating
+                break;
+            case LOWEST:
+                reviews.sort(Comparator.comparing(Review::getRating)); // Sort by lowest rating
+                break;
         }
 
         // Fetch user's votes for these reviews
@@ -84,9 +103,20 @@ public class ReviewService {
         List<ReviewResponseDTO> otherReviews = reviews.stream()
                 .filter(review -> userReview == null || !(review.getReviewId() == userReview.getReviewId()))
                 .map(review -> mapToReviewDTO(review, userVoteMap))
-                .collect(Collectors.toList());
+                .toList();
 
-        return Map.of("userReview", userReviewDTO, "otherReviews", otherReviews);
+        // Paginate reviews
+        int start = (page - 1) * reviewPerPage;
+        int end = Math.min(start + reviewPerPage, otherReviews.size());
+        otherReviews = otherReviews.subList(start, end);
+
+        Map<String, Object> map = new HashMap<>(Map.of("otherReviews", otherReviews));
+
+        if (userReviewDTO != null) {
+            map.put("userReview", userReviewDTO);
+        }
+
+        return map;
     }
 
     public void saveReview(ReviewDTO reviewDTO, Long userId) {

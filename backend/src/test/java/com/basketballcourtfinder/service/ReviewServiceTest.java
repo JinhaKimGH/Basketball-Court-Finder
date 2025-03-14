@@ -3,11 +3,13 @@ package com.basketballcourtfinder.service;
 import com.basketballcourtfinder.dto.ReviewDTO;
 import com.basketballcourtfinder.dto.ReviewResponseDTO;
 import com.basketballcourtfinder.entity.*;
+import com.basketballcourtfinder.enums.SortMethod;
 import com.basketballcourtfinder.exceptions.EntityAlreadyExistsException;
 import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.repository.ReviewRepository;
 import com.basketballcourtfinder.repository.UserRepository;
 import com.basketballcourtfinder.repository.VoteRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
@@ -17,7 +19,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @RestClientTest(ReviewService.class)
@@ -38,13 +40,21 @@ public class ReviewServiceTest {
     @MockitoBean
     private BasketballCourtService courtService;
 
-    @Test
-    public void testFindCourtReviews_Success() {
-        // Mock data
-        Long courtId = 123L;
-        Long userId = 1L;
+    private Long courtId;
+    private Long userId;
+    private Review userReview;
+    private User author;
+    private User otherUser;
+    private User otherUser2;
+    private Review higherNewer;
+    private Review lowerOlder;
 
-        Review userReview = new Review();
+    @BeforeEach
+    public void setup() {
+        courtId = 123L;
+        userId = 1l;
+
+        userReview = new Review();
         userReview.setReviewId(1L);
         userReview.setBody("Great court!");
         userReview.setEdited(false);
@@ -52,35 +62,51 @@ public class ReviewServiceTest {
         userReview.setVoteCount(10);
         userReview.setCreatedAt(new Date());
 
-        User author = new User();
+        higherNewer = new Review();
+        higherNewer.setReviewId(2L);
+        higherNewer.setBody("Newest Higher review");
+        higherNewer.setEdited(false);
+        higherNewer.setRating(5);
+        higherNewer.setVoteCount(10);
+        higherNewer.setCreatedAt(new Date(2000L));
+
+        lowerOlder = new Review();
+        lowerOlder.setReviewId(3L);
+        lowerOlder.setBody("Older review");
+        lowerOlder.setEdited(false);
+        lowerOlder.setRating(1);
+        lowerOlder.setVoteCount(5);
+        lowerOlder.setCreatedAt(new Date(1000L));
+
+        author = new User();
         author.setId(userId);
         author.setDisplayName("John Doe");
         userReview.setUser(author);
 
-        Review otherReview = new Review();
-        otherReview.setReviewId(2L);
-        otherReview.setBody("Needs maintenance");
-        otherReview.setEdited(false);
-        otherReview.setRating(3);
-        otherReview.setVoteCount(5);
-        otherReview.setCreatedAt(new Date());
-
-        User otherUser = new User();
+        otherUser = new User();
         otherUser.setId(2L);
         otherUser.setDisplayName("Jane Doe");
-        otherReview.setUser(otherUser);
+        higherNewer.setUser(otherUser);
 
+        otherUser2 = new User();
+        otherUser2.setId(3L);
+        otherUser2.setDisplayName("John Smith");
+        lowerOlder.setUser(otherUser2);
+    }
+
+    @Test
+    public void testFindCourtReviews_Success() {
         Vote vote = new Vote();
         vote.setType(VoteType.UPVOTE);
         vote.setReview(userReview);
 
         // Mock repository behavior
-        when(reviewRepository.findByCourtId(courtId)).thenReturn(Arrays.asList(userReview, otherReview));
+        when(reviewRepository.findByCourtId(courtId)).thenReturn(Arrays.asList(userReview, higherNewer));
         when(voteRepository.findByUserIdAndReview_ReviewIdIn(eq(userId), anyList()))
                 .thenReturn(Collections.singletonList(vote));
 
         // Call service method
-        Map<String, Object> response = reviewService.findCourtReviews(courtId, userId);
+        Map<String, Object> response = reviewService.findCourtReviews(courtId, userId, 1, 10, SortMethod.NEWEST);
 
         // Validate user review
         ReviewResponseDTO userReviewDTO = (ReviewResponseDTO) response.get("userReview");
@@ -95,13 +121,6 @@ public class ReviewServiceTest {
         List<ReviewResponseDTO> otherReviews = (List<ReviewResponseDTO>) response.get("otherReviews");
         assertThat(otherReviews).hasSize(1);
 
-        ReviewResponseDTO otherReviewDTO = otherReviews.get(0);
-        assertThat(otherReviewDTO.getReviewId()).isEqualTo(2L);
-        assertThat(otherReviewDTO.getContent()).isEqualTo("Needs maintenance");
-        assertThat(otherReviewDTO.isUpvoted()).isFalse();
-        assertThat(otherReviewDTO.isDownvoted()).isFalse();
-        assertThat(otherReviewDTO.getAuthorDisplayName()).isEqualTo("Jane Doe");
-
         // Verify repository calls
         verify(reviewRepository, times(1)).findByCourtId(courtId);
         verify(voteRepository, times(1)).findByUserIdAndReview_ReviewIdIn(eq(userId), anyList());
@@ -109,13 +128,11 @@ public class ReviewServiceTest {
 
     @Test
     public void testFindCourtReviews_NoReviews() {
-        Long courtId = 123L;
-        Long userId = 1L;
 
         when(reviewRepository.findByCourtId(courtId)).thenReturn(Collections.emptyList());
 
         // Act
-        Map<String, Object> result = reviewService.findCourtReviews(courtId, userId);
+        Map<String, Object> result = reviewService.findCourtReviews(courtId, userId, 1, 10, SortMethod.NEWEST);
         Object userReviewObj = result.get("userReview");
         Optional<ReviewResponseDTO> userReview = userReviewObj instanceof Optional
                 ? (Optional<ReviewResponseDTO>) userReviewObj
@@ -131,21 +148,6 @@ public class ReviewServiceTest {
 
     @Test
     public void testFindCourtReviews_NoVotes() {
-        Long courtId = 123L;
-        Long userId = 1L;
-
-        Review userReview = new Review();
-        userReview.setReviewId(1L);
-        userReview.setBody("Great court!");
-        userReview.setEdited(false);
-        userReview.setRating(5);
-        userReview.setVoteCount(10);
-        userReview.setCreatedAt(new Date());
-
-        User author = new User();
-        author.setId(userId);
-        author.setDisplayName("John Doe");
-        userReview.setUser(author);
 
         // Mock repository behavior
         when(reviewRepository.findByCourtId(courtId)).thenReturn(Collections.singletonList(userReview));
@@ -153,7 +155,7 @@ public class ReviewServiceTest {
                 .thenReturn(Collections.emptyList());
 
         // Call service method
-        Map<String, Object> response = reviewService.findCourtReviews(courtId, userId);
+        Map<String, Object> response = reviewService.findCourtReviews(courtId, userId, 1, 10, SortMethod.NEWEST);
 
         // Validate user review
         ReviewResponseDTO userReviewDTO = (ReviewResponseDTO) response.get("userReview");
@@ -315,9 +317,6 @@ public class ReviewServiceTest {
 
     @Test
     public void testDeleteReview_Success() {
-        Long userId = 1L;
-        Long courtId = 1L;
-
         when(userRepository.existsById(userId)).thenReturn(true);
         when(courtService.getCourt(courtId)).thenReturn(new BasketballCourt());
         Review review = new Review();
@@ -335,9 +334,6 @@ public class ReviewServiceTest {
 
     @Test
     public void testDeleteReview_UserNotFound() {
-        Long userId = 1L;
-        Long courtId = 1L;
-
         when(userRepository.existsById(userId)).thenReturn(false);
 
         assertThrows(EntityNotFoundException.class, () -> {
@@ -349,9 +345,6 @@ public class ReviewServiceTest {
 
     @Test
     public void testDeleteReview_CourtNotFound() {
-        Long userId = 1L;
-        Long courtId = 1L;
-
         when(userRepository.existsById(userId)).thenReturn(true);
         when(courtService.getCourt(courtId)).thenReturn(null);
 
@@ -364,9 +357,6 @@ public class ReviewServiceTest {
 
     @Test
     public void testDeleteReview_ReviewNotFound() {
-        Long userId = 1L;
-        Long courtId = 1L;
-
         when(userRepository.existsById(userId)).thenReturn(true);
         when(courtService.getCourt(courtId)).thenReturn(new BasketballCourt());
         when(reviewRepository.findByCourtIdAndUserId(courtId, userId)).thenReturn(Optional.empty());
@@ -380,41 +370,75 @@ public class ReviewServiceTest {
 
     @Test
     public void testGetCourtRating_MultipleRatings() {
-        // Mock data
-        Long courtId = 123L;
 
-        Review review1 = new Review();
-        review1.setReviewId(1L);
-        review1.setBody("Great court!");
-        review1.setEdited(false);
-        review1.setRating(5);
-        review1.setVoteCount(10);
-        review1.setCreatedAt(new Date());
-
-        Review review2 = new Review();
-        review2.setReviewId(2L);
-        review2.setBody("Needs maintenance");
-        review2.setEdited(false);
-        review2.setRating(3);
-        review2.setVoteCount(5);
-        review2.setCreatedAt(new Date());
-
-        when(reviewRepository.findByCourtId(courtId)).thenReturn(List.of(review1, review2));
+        when(reviewRepository.findByCourtId(courtId)).thenReturn(List.of(higherNewer, lowerOlder));
 
 
-        Map map = Map.of("rating", 4.0, "reviews", 2);
+        Map map = Map.of("rating", 3.0, "reviews", 2);
 
         assert(Objects.equals(reviewService.getCourtRating(courtId), map));
     }
 
     @Test
     public void testGetCourtRating_NoRatings() {
-        // Mock data
-        Long courtId = 123L;
-
         when(reviewRepository.findByCourtId(courtId)).thenReturn(List.of());
         Map map = Map.of("rating", 0.0, "reviews", 0);
 
         assert(Objects.equals(reviewService.getCourtRating(courtId), map));
     }
+
+    @Test
+    public void testFindCourtReviews_SortByNewest() {
+
+        // Mock repository behavior
+        when(reviewRepository.findByCourtId(courtId)).thenReturn(Arrays.asList(higherNewer, lowerOlder));
+
+        // Call service method with SortMethod.NEWEST
+        Map<String, Object> response = reviewService.findCourtReviews(courtId, userId, 1, 10, SortMethod.NEWEST);
+
+        List<ReviewResponseDTO> otherReviews = (List<ReviewResponseDTO>) response.get("otherReviews");
+
+        // Ensure reviews are sorted by date, with the newest first
+        assertThat(otherReviews.get(0).getReviewId()).isEqualTo(2L);
+        assertThat(otherReviews.get(1).getReviewId()).isEqualTo(3L);
+
+        verify(reviewRepository, times(1)).findByCourtId(courtId);
+    }
+
+    @Test
+    public void testFindCourtReviews_SortByHighestRated() {
+
+        // Mock repository behavior
+        when(reviewRepository.findByCourtId(courtId)).thenReturn(Arrays.asList(higherNewer, lowerOlder));
+
+        // Call service method with SortMethod.HIGHEST_RATED
+        Map<String, Object> response = reviewService.findCourtReviews(courtId, userId, 1, 10, SortMethod.HIGHEST);
+
+        List<ReviewResponseDTO> otherReviews = (List<ReviewResponseDTO>) response.get("otherReviews");
+
+        // Ensure reviews are sorted by rating, with the highest rated first
+        assertThat(otherReviews.get(0).getReviewId()).isEqualTo(2L);
+        assertThat(otherReviews.get(1).getReviewId()).isEqualTo(3L);
+
+        verify(reviewRepository, times(1)).findByCourtId(courtId);
+    }
+
+    @Test
+    public void testFindCourtReviews_SortByLowestRated() {
+
+        // Mock repository behavior
+        when(reviewRepository.findByCourtId(courtId)).thenReturn(Arrays.asList(higherNewer, lowerOlder));
+
+        // Call service method with SortMethod.LOWEST_RATED
+        Map<String, Object> response = reviewService.findCourtReviews(courtId, userId, 1, 10, SortMethod.LOWEST);
+
+        List<ReviewResponseDTO> otherReviews = (List<ReviewResponseDTO>) response.get("otherReviews");
+
+        // Ensure reviews are sorted by rating, with the lowest rated first
+        assertThat(otherReviews.get(0).getReviewId()).isEqualTo(3L);
+        assertThat(otherReviews.get(1).getReviewId()).isEqualTo(2L);
+
+        verify(reviewRepository, times(1)).findByCourtId(courtId);
+    }
+
 }

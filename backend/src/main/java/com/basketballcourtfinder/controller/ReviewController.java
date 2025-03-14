@@ -3,6 +3,7 @@ package com.basketballcourtfinder.controller;
 import com.basketballcourtfinder.dto.ReviewDTO;
 import com.basketballcourtfinder.dto.ReviewResponseDTO;
 import com.basketballcourtfinder.entity.Review;
+import com.basketballcourtfinder.enums.SortMethod;
 import com.basketballcourtfinder.service.ReviewService;
 import com.basketballcourtfinder.util.AuthUtil;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,11 @@ public class ReviewController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> getReviews(@RequestParam Long courtId) {
+    public ResponseEntity<?> getReviews(
+            @RequestParam Long courtId,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer reviewsPerPage,
+            @RequestParam(defaultValue = "NEWEST") SortMethod sortMethod) {
         // User ID Found from Token
         Long userId;
         try {
@@ -35,7 +40,7 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
 
-        return ResponseEntity.ok(reviewService.findCourtReviews(courtId, userId));
+        return ResponseEntity.ok(reviewService.findCourtReviews(courtId, userId, page, reviewsPerPage, sortMethod));
     }
 
     @PostMapping()

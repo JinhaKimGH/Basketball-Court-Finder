@@ -3,6 +3,7 @@ package com.basketballcourtfinder.controller;
 import com.basketballcourtfinder.dto.ReviewDTO;
 import com.basketballcourtfinder.dto.ReviewResponseDTO;
 import com.basketballcourtfinder.entity.Review;
+import com.basketballcourtfinder.enums.SortMethod;
 import com.basketballcourtfinder.exceptions.EntityNotFoundException;
 import com.basketballcourtfinder.service.ReviewService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -88,7 +89,7 @@ public class ReviewControllerTest {
         responseMap.put("userReview", userReview);
         responseMap.put("otherReviews", otherReviews);
 
-        when(reviewService.findCourtReviews(courtId, userId)).thenReturn(responseMap);
+        when(reviewService.findCourtReviews(courtId, userId, 1, 10, SortMethod.NEWEST)).thenReturn(responseMap);
 
         mockMvc.perform(get("/api/review")
                         .param("courtId", String.valueOf(courtId)))
