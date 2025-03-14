@@ -101,7 +101,7 @@ export default function CourtCard(
       }
       
       <Tabs.Root defaultValue="overview" marginTop={5}>
-        <Tabs.List justifyContent="space-around">
+        <Tabs.List justifyContent="space-around" colorPalette={"orange"}>
           <Tabs.Trigger value="overview">
             Overview
           </Tabs.Trigger>

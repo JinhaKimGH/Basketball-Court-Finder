@@ -44,7 +44,7 @@ export default function ProfilePopup(
               <Avatar.Fallback name={displayName} tabIndex={0} />
             </Avatar.Root>
             :
-            <LuCircleUserRound size={props.iconSize} color="#45a2ff" cursor="pointer" />
+            <LuCircleUserRound size={props.iconSize} color="#f97316" cursor="pointer" />
           }
         </Box>
       </Tooltip>
@@ -83,7 +83,7 @@ export default function ProfilePopup(
             </Avatar.Root>
             <Heading size="xl" fontWeight={400}>Hi, {displayName}!</Heading>
             <Button 
-              colorPalette="blue"
+              colorPalette="orange"
               variant="surface"
               rounded="md"
               width="100%" 
@@ -92,7 +92,7 @@ export default function ProfilePopup(
               Manage Your Profile
             </Button>
             <Button 
-              colorPalette="blue"
+              colorPalette="orange"
               variant="surface"
               rounded="md"
               width="100%" 
@@ -110,7 +110,7 @@ export default function ProfilePopup(
           <Flex direction="column" alignItems="center" gap="5">
             <Heading size="lg" fontWeight={400}>You are not logged in.</Heading>
             <Button 
-              colorPalette="blue"
+              colorPalette="orange"
               variant="surface"
               rounded="md"
               width="100%" 

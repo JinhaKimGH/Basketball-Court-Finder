@@ -185,8 +185,18 @@ export default function Login() : JSX.Element{
         paddingTop="0"
         gap="6"
       >
-        <Link href="/sign-up" variant="underline">Create an Account</Link>
-        <Button onClick={handleLogin} type="submit" loading={isLoading} width="90px">Login</Button>
+        <Link 
+          href="/sign-up" 
+          variant="underline" 
+          border="none"
+          _focus={{ 
+            boxShadow: 'none',
+            outline: 'none' 
+          }}
+        >
+          Create an Account
+        </Link>
+        <Button onClick={handleLogin} type="submit" loading={isLoading} width="90px" backgroundColor={"orange.500"}>Login</Button>
       </Flex>
     </Card.Root>
   )

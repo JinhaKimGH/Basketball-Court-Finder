@@ -221,8 +221,25 @@ export default function SignUp() : JSX.Element{
           gap="6"
         >
           {signedUp ? 
-            <Link href="/log-in" variant="underline">Continue to Login</Link> :
-            <Button onClick={handleSignUp} type="submit" loading={isLoading} width="90px">Sign Up</Button> 
+            <Link 
+              href="/log-in" 
+              variant="underline" 
+              _focus={{ 
+                boxShadow: 'none',
+                outline: 'none' 
+              }}
+            >
+              Continue to Login
+            </Link> :
+            <Button 
+              backgroundColor={"orange.500"} 
+              onClick={handleSignUp} 
+              type="submit" 
+              loading={isLoading} 
+              width="90px"
+            >
+              Sign Up
+            </Button> 
           }
         </Flex>
     </Card.Root>

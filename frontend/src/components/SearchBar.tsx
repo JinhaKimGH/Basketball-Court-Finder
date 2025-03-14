@@ -73,7 +73,7 @@ export default function SearchBar(
   // Search Icon
   const searchIcon = (
     <Tooltip content="Search" openDelay={100}>
-      <Button variant="plain" onClick={handleSubmit} loading={isLoading} padding={0}>
+      <Button variant="plain" onClick={handleSubmit} loading={isLoading} padding={0} _hover={{color: "orange.500"}}>
         <LuSearch size="24px" cursor="pointer" />
       </Button>
     </Tooltip>
