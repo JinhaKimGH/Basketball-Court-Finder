@@ -86,10 +86,14 @@ export function timeAgo(date : Date) {
   if (days < 1) return "today";
   if (days === 1) return "a day ago";
   if (days < 7) return `${days} days ago`;
-  if (days === 7) return 'a week ago';
+  if (weeks === 1) return 'a week ago';
   if (weeks < 4) return `${weeks} weeks ago`;
-  if (weeks === 4) return 'a month ago';
+  if (months === 1) return 'a month ago';
   if (months < 12) return `${months} months ago`;
-  if (months === 12) return 'a year ago';
+  if (years === 1) return 'a year ago';
   return `${years} years ago`;
+}
+
+export function displayLink(url : string) {
+  return url.replace(/^(https?:\/\/)?(www\.)?/, "").replace(/\/$/, "");
 }

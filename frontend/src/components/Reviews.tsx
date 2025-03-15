@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/menu";
 import { DialogContent, DialogRoot, DialogTrigger } from "@/components/ui/dialog";
 import ReviewForm from "./ReviewForm";
-import { Suspense, useEffect, useState } from "react";
-import { ReviewData } from "@/interfaces";
+import { useEffect, useState } from "react";
+import { Review, ReviewData } from "@/interfaces";
 import ReviewCard from "./ReviewCard";
 import { useInView } from 'react-intersection-observer';
 
@@ -24,6 +24,7 @@ export default function Reviews(
   const [sortMethod, setSortMethod] = useState("NEWEST");
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const REVIEWS_PER_PAGE = 10;
 
@@ -33,20 +34,10 @@ export default function Reviews(
     triggerOnce: false
   });
 
-  const [reviewData, setReviewData] = useState<ReviewData>({otherReviews: [{
-    reviewId: 1,
-    content: "I love this court!",
-    totalVotes: 5,
-    authorDisplayName: "Jeff",
-    authorTrustScore: 52,
-    upvoted: true,
-    downvoted: false,
-    createdAt: new Date(),
-    isEdited: true,
-    rating: 5
-  }]}); 
+  const [reviewData, setReviewData] = useState<ReviewData>({otherReviews: []}); 
 
   const fetchReviews = async (pageNum: number) => {
+    setIsLoading(true);
     fetch(`${import.meta.env.VITE_APP_API_BASE_URL}/api/review?courtId=${props.courtId}&page=${pageNum}&limit=${REVIEWS_PER_PAGE}&sortMethod=${sortMethod}`,
       {
         method: 'GET',
@@ -75,6 +66,8 @@ export default function Reviews(
     }).catch((error) => {
       console.error("Error fetching review data: ", error);
       //TODO: Replace with newrelic logging
+    }).finally(() => {
+      setIsLoading(false);
     })
   }
 
@@ -98,6 +91,24 @@ export default function Reviews(
       fetchReviews(page);
     }
   }, [page]);
+
+  const LazyReviewCard = ({ review }: { review: Review }) => {
+    const { ref, inView } = useInView({
+      triggerOnce: true,
+      rootMargin: '100px 0px', // Start loading 100px before it enters viewport
+    });
+
+    return (
+      <Box ref={ref} minHeight="150px" width="100%"> {/* Maintain layout height */}
+        {inView && (
+          <ReviewCard 
+            review={review}
+            isUserReview={false}
+          />
+        )}
+      </Box>
+    );
+  };
   
   return (
     <VStack>
@@ -169,20 +180,14 @@ export default function Reviews(
       </Flex>
 
       { reviewData.userReview &&
-        <ReviewCard review={reviewData.userReview} setReviewData={setReviewData} isUserReview/>
+        <ReviewCard review={reviewData.userReview} isUserReview/>
       }
 
-      <Suspense fallback={
-        <Box width="100%" py={4} textAlign={"center"}>
-          <Spinner color="orange.500"/>
-        </Box>
-      }>
-        {reviewData.otherReviews.map(review => (
-          <ReviewCard key={review.reviewId} review={review} setReviewData={setReviewData} isUserReview={false}/>
-        ))}
-      </Suspense>
+      {reviewData.otherReviews.map(review => (
+        <LazyReviewCard key={review.reviewId} review={review} />
+      ))}
 
-      {hasMore && (
+      {(hasMore || isLoading)&& (
         <Box ref={loadMoreRef} py={4} w="100%" textAlign={"center"}>
           <Spinner color="orange.500"/>
         </Box>

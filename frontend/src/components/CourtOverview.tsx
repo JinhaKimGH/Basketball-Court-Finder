@@ -10,6 +10,7 @@ import { FaPersonArrowDownToLine } from "react-icons/fa6";
 import { MdOutlineDriveFileRenameOutline } from "react-icons/md";
 import { DialogContent, DialogRoot, DialogTrigger } from "@/components/ui/dialog";
 import CourtEditForm, { FieldType } from "./CourtEditForm";
+import { displayLink } from "@/utils";
 
 export default function CourtOverview(
   props: {
@@ -203,9 +204,9 @@ export default function CourtOverview(
             <List.Indicator color="orange.500" boxSize={5}>
               <LuLink size={20}/>
             </List.Indicator>
-            <Link href={"https://" + court.website}>
+            <Link href={court.website}>
               <Text marginRight={2}>
-                {court.website} 
+                {displayLink(court.website)} 
               </Text>
               <LuExternalLink/>
             </Link>

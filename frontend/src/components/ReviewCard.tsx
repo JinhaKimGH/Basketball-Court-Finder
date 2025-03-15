@@ -1,19 +1,37 @@
-import { Review, ReviewData } from "@/interfaces";
+import { Review } from "@/interfaces";
 import { pickPalette, timeAgo } from "@/utils";
 import { Box, Flex, Text, Avatar, RatingGroup, Icon } from "@chakra-ui/react";
 import { LuChevronDown, LuChevronUp } from "react-icons/lu";
-
+import { useState } from 'react';
 
 export default function ReviewCard(
   props: {
     isUserReview: boolean,
-    review: Review,
-    setReviewData: React.Dispatch<React.SetStateAction<ReviewData>>
+    review: Review
   }
 ) {
-  const {isUserReview, review, setReviewData} = props;
+  const {isUserReview, review} = props;
+  const [localVoteState, setLocalVoteState] = useState({
+    upvoted: review.upvoted,
+    downvoted: review.downvoted,
+    totalVotes: review.totalVotes
+  });
 
   const handleVote = async (targetVote: 'up' | 'down' | 'remove') => {
+    // Optimistically update local state
+    const oldState = { ...localVoteState };
+    const newState = {
+      upvoted: targetVote === 'up',
+      downvoted: targetVote === 'down',
+      totalVotes: localVoteState.totalVotes + (
+        targetVote === 'remove' ? (oldState.upvoted ? -1 : 1) :
+        !oldState.upvoted && !oldState.downvoted ? (targetVote === 'up' ? 1 : -1) :
+        oldState.upvoted && targetVote === 'down' ? -2 :
+        oldState.downvoted && targetVote === 'up' ? 2 : 0
+      )
+    };
+    setLocalVoteState(newState);
+
     try {
       const endpoint = targetVote === 'remove' 
         ? `${review.reviewId}`
@@ -29,43 +47,10 @@ export default function ReviewCard(
       );
   
       if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || 'Voting issue');
+        // Revert on error
+        setLocalVoteState(oldState);
+        throw new Error(await response.text() || 'Voting issue');
       }
-  
-      setReviewData(prev => ({
-        ...prev,
-        otherReviews: prev.otherReviews.map(r => {
-          if (r.reviewId !== review.reviewId) return r;
-  
-          let voteDelta = 0;
-          
-          // Case 1: Removing an existing vote
-          if (targetVote === 'remove') {
-            if (r.upvoted) voteDelta = -1;
-            if (r.downvoted) voteDelta = 1;
-          }
-          // Case 2: Adding a new vote where none existed
-          else if (!r.upvoted && !r.downvoted) {
-            voteDelta = targetVote === 'up' ? 1 : -1;
-          }
-          // Case 3: Switching from upvote to downvote
-          else if (r.upvoted && targetVote === 'down') {
-            voteDelta = -2; // Remove upvote (-1) and add downvote (-1)
-          }
-          // Case 4: Switching from downvote to upvote
-          else if (r.downvoted && targetVote === 'up') {
-            voteDelta = 2; // Remove downvote (+1) and add upvote (+1)
-          }
-  
-          return {
-            ...r,
-            upvoted: targetVote === 'up',
-            downvoted: targetVote === 'down',
-            totalVotes: r.totalVotes + voteDelta
-          };
-        })
-      }));
     } catch (e) {
       console.error("Error voting on review:", e);
     }
@@ -149,7 +134,7 @@ export default function ReviewCard(
         <Icon
           as={LuChevronUp}
           boxSize="20px"
-          color={review.upvoted ? "#08d408" : "rgb(94, 94, 94)"}
+          color={localVoteState.upvoted ? "#08d408" : "rgb(94, 94, 94)"}
           cursor={!isUserReview ? "pointer" : "default"}
           opacity={1}
           _hover={{
@@ -157,14 +142,14 @@ export default function ReviewCard(
           }}
           onClick={() => {
             if (isUserReview) return;
-            handleVote(review.upvoted ? 'remove' : 'up');
+            handleVote(localVoteState.upvoted ? 'remove' : 'up');
           }}
         />
-        <Text fontSize="14px">{review.totalVotes}</Text>
+        <Text fontSize="14px">{localVoteState.totalVotes}</Text>
         <Icon
           as={LuChevronDown}
           boxSize="20px"
-          color={review.downvoted ? "#d40808" : "rgb(94, 94, 94)"}
+          color={localVoteState.downvoted ? "#d40808" : "rgb(94, 94, 94)"}
           cursor={!isUserReview ? "pointer" : "default"}
           opacity={1}
           _hover={{
@@ -172,7 +157,7 @@ export default function ReviewCard(
           }}
           onClick={() => {
             if (isUserReview) return;
-            handleVote(review.downvoted ? 'remove' : 'down');
+            handleVote(localVoteState.downvoted ? 'remove' : 'down');
           }}
         />
       </Flex>

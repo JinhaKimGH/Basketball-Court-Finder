@@ -126,7 +126,7 @@ export default function SignUp() : JSX.Element{
       transform={{base: "none", md: "translate(-50%, -50%)"}}
       boxShadow={{base: "none", md: "md"}}
       width={{base: "100%", md: "60%", lg: "400px"}}
-      height={{lg: signedUp ? "230px" : "500px"}}
+      height={{lg: signedUp ? "230px" : "550px"}}
       border={{base: "none", md: "1px solid"}}
       borderColor={{base: "transparent", md: "gray.200"}}
     >
