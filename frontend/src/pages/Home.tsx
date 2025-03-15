@@ -14,6 +14,7 @@ export default function Home() {
   const [selected, setSelected] = React.useState(-1);
 
   // Coordinates that the map is centered on
+  const [coordinates, setCoordinates] = React.useState<LatLngTuple>([43.65, -79.3832]);
   const [mapCenter, setMapCenter] = React.useState<LatLngTuple>([43.65, -79.3832]);
 
   // Basketball Courts
@@ -43,8 +44,8 @@ export default function Home() {
   // Fetch courts when the map center updates
   React.useEffect(() => {
     const params = new URLSearchParams({
-      latitude: mapCenter[0].toString(),
-      longitude: mapCenter[1].toString(),
+      latitude: coordinates[0].toString(),
+      longitude: coordinates[1].toString(),
       range: '2000', // TODO: Set as constant for now, update later?
     });
 
@@ -62,7 +63,7 @@ export default function Home() {
       .then((data) => setCourts(data))
       .catch((error) => console.error(error.message)); // TODO: update later with logging
 
-  }, [baseApiUrl, mapCenter])
+  }, [baseApiUrl, coordinates])
 
   const closeCard = (): void => {
     setSelected(-1);
@@ -70,12 +71,13 @@ export default function Home() {
 
   return (
     <>
-      <SearchBar setCoordinates={setMapCenter}/>
+      <SearchBar setCoordinates={setCoordinates} currentMapCenter={mapCenter}/>
       <Map 
-        coordinates={mapCenter} 
+        coordinates={coordinates} 
         courts={courts} 
         setSelected={setSelected}
         selected={selected}
+        onCenterChange={(center) => setMapCenter(center)}
       />
       <AnimatePresence>
         {(0 <= selected && selected < courts.length) &&

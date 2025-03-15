@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, ZoomControl, useMapEvents } from 'react-leaflet';
 import L, { LatLngBoundsExpression, LatLngTuple } from 'leaflet'
 import 'leaflet/dist/leaflet.css';
 import { Box } from '@chakra-ui/react';
@@ -17,12 +17,25 @@ const selectedMarker = L.icon({
   iconAnchor: [30,60],
 })
 
+function MapEventHandler({ onMoveEnd }: { onMoveEnd: (center: LatLngTuple) => void }) {
+  const map = useMapEvents({
+    moveend: () => {
+      if (map && onMoveEnd) {  // Add null check
+        const center = map.getCenter();
+        onMoveEnd([center.lat, center.lng]);
+      }
+    },
+  });
+  return null;
+}
+
 export default function Map(
   props: {
     coordinates: LatLngTuple,
     courts: Array<BasketballCourt>,
-    setSelected: React.Dispatch<React.SetStateAction<number>>
-    selected: number
+    setSelected: React.Dispatch<React.SetStateAction<number>>,
+    selected: number,
+    onCenterChange: (center: LatLngTuple) => void
   }
 ) : JSX.Element {
   const [key, setKey] = React.useState(0); // Key property to force map container update
@@ -70,6 +83,7 @@ export default function Map(
         }}
         zoomControl={false}
       >
+        <MapEventHandler onMoveEnd={props.onCenterChange} />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           bounds={worldBounds}
