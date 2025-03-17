@@ -6,8 +6,9 @@ import {
   Card, 
   Heading, 
   Box, 
-  Link,
+  Link as ChakraLink,
 } from "@chakra-ui/react";
+import { Link } from 'react-router-dom';
 import {CustomInput as Input} from "@/components/ui/custom_input";
 import { validateEmail } from "../utils";
 import React, {useContext} from "react";
@@ -185,17 +186,18 @@ export default function Login() : JSX.Element{
         paddingTop="0"
         gap="6"
       >
-        <Link 
-          href="/Basketball-Court-Finder/sign-up" 
+        <ChakraLink
+          as={Link} 
           variant="underline" 
           border="none"
           _focus={{ 
             boxShadow: 'none',
             outline: 'none' 
           }}
+          {...{ to: "/sign-up" }}
         >
           Create an Account
-        </Link>
+        </ChakraLink>
         <Button onClick={handleLogin} type="submit" loading={isLoading} width="90px" backgroundColor={"orange.500"}>Login</Button>
       </Flex>
     </Card.Root>

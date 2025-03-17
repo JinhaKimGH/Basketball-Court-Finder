@@ -8,8 +8,9 @@ import {
     Box,
     Card,
     Button,
-    Link
+    Link as ChakraLink
 } from "@chakra-ui/react";
+import { Link } from "react-router-dom";
 import {CustomInput as CInput} from "@/components/ui/custom_input";
 import { LuCircleCheckBig } from "react-icons/lu";
 
@@ -221,16 +222,17 @@ export default function SignUp() : JSX.Element{
           gap="6"
         >
           {signedUp ? 
-            <Link 
-              href="/Basketball-Court-Finder/log-in" 
+            <ChakraLink 
+              as={Link}
               variant="underline" 
               _focus={{ 
                 boxShadow: 'none',
                 outline: 'none' 
               }}
+              {...{ to: "/log-in" }}
             >
               Continue to Login
-            </Link> :
+            </ChakraLink> :
             <Button 
               backgroundColor={"orange.500"} 
               onClick={handleSignUp} 
