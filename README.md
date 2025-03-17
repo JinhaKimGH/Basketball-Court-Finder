@@ -1,8 +1,8 @@
 # 🏀 Basketball-Court-Finder
 
-This app finds basketball courts around a given location, and allows users to rate them.
+This app finds basketball courts around a given location, and allows users to leave reviews.
 
-This app gets basketball courts, its data, and creates the map using the OpenStreetMap (OSM) API, geocodes and reverse geocodes using the Nominatim API, and utilizes Firebase for a database.
+This app gets basketball courts, its data, and creates the map using the OpenStreetMap (OSM) API, and geocodes and reverse geocodes using the Nominatim API.
 
 ## 🔗 Website Link
 
@@ -15,30 +15,14 @@ Users can:
 - Log in
 - Leave Reviews
 - Search for basketball courts within a range of an address
-- View the name of the court, distance from the address, number of hoops, rating, and surface type
+- View and update different court attributes
 
-## 📸 Screenshots
+## 📷 Photos
 
-![Search Results](/screenshots/searchresults.png)
-![Court Information](/screenshots/courtinfo.png)
+![](screenshots/home.png)
+![](screenshots/reviews.png)
 
-## Environment Variables
-
-To run this project locally, you will need to add the following variables after creating a firebase database to a config.jsx file.
-
-`firebaseValues.apiKey` -> [apiKey for firebase](https://firebase.google.com/docs/web/setup)
-
-`firebaseValues.authDomain` -> [Value created with firebase setup](https://firebase.google.com/docs/web/setup)
-
-`firebaseValues.projectId` -> [Value created with firebase setup](https://firebase.google.com/docs/web/setup)
-
-`firebaseValues.storageBucket` -> [Value created with firebase setup](https://firebase.google.com/docs/web/setup)
-
-`firebaseValues.messagingSenderId` -> [Value created with firebase setup](https://firebase.google.com/docs/web/setup)
-
-`firebaseValues.appId` -> [Value created with firebase setup](https://firebase.google.com/docs/web/setup)
-
-## Run Locally
+## 🚀 Run Locally
 
 Clone the project
 
@@ -46,10 +30,10 @@ Clone the project
   git clone git@github.com:JinhaKimGH/Basketball-Court-Finder.git
 ```
 
-Go to the project directory
+Go to the frontend directory
 
 ```bash
-  cd Basketball-Court-Finder
+  cd Basketball-Court-Finder/frontend
 ```
 
 Install dependencies
@@ -62,6 +46,48 @@ Start the server
 
 ```bash
   npm run dev
+```
+
+Open the backend
+
+```bash
+  cd Basketball-Court-Finder/backend
+```
+
+Install dependencies
+
+```bash
+  mvn install
+```
+
+Set Up `application.properties`
+
+Inside `src/main/resources/application.properties`, set these attributes accordingly
+
+```properties
+spring.datasource.url = jdbc:mysql://localhost:3306/basketballcourtfinder
+spring.application.name=Basketball Court Finder
+spring.datasource.username=yourusername
+spring.datasource.password=yourpassword
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+
+jwt.secret=random88characterlongsecret
+jwt.expiration=86400000
+cors.allowed-origin=http://localhost:5173
+spring.profiles.active=dev
+```
+
+Build and Run the Application
+
+Using Maven without IntelliJ IDEA:
+Click the maven tab in the IDE.
+
+```sh
+./mvnw clean install
+./mvnw spring-boot:run
 ```
 
 ## 🔗 Links
