@@ -124,7 +124,7 @@ export default function Login() : JSX.Element{
      >
       <Card.Header>
         <Image
-          src="/assets/basket.png"
+          src="./assets/basket.png"
           alt="Basket Icon"
           boxSize="50px"
           objectFit="cover"

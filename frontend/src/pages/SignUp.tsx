@@ -133,7 +133,7 @@ export default function SignUp() : JSX.Element{
       { !signedUp &&
         <Card.Header>
           <Image
-            src="/assets/basket.png"
+            src="./assets/basket.png"
             alt="Basket Icon"
             boxSize="50px"
             objectFit="cover"
