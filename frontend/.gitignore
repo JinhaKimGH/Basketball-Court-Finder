@@ -22,5 +22,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Config File
-config.jsx
+# Env File
+*.env
