@@ -38,7 +38,7 @@ public class ReviewService {
                 .mapToInt(Review::getRating)
                 .average().orElse(0.0);
 
-        return Map.of("rating", rating, "reviews", reviews.size());
+        return Map.of("rating", Math.round(rating * 100.0) / 100.0, "reviews", reviews.size());
     }
 
     private ReviewResponseDTO mapToReviewDTO(Review review, Map<Long, VoteType> userVoteMap) {
@@ -63,8 +63,7 @@ public class ReviewService {
                                                 Long userId,
                                                 Integer page,
                                                 Integer reviewPerPage,
-                                                SortMethod sortMethod
-    ) {
+                                                SortMethod sortMethod) {
         List<Review> reviews = reviewRepository.findByCourtId(courtId);
 
         if (reviews.isEmpty()) {
@@ -74,27 +73,34 @@ public class ReviewService {
         // Sort reviews based on the selected sort method
         switch (sortMethod) {
             case NEWEST:
-                reviews.sort(Comparator.comparing(Review::getCreatedAt).reversed()); // Sort by newest date
+                reviews.sort(Comparator.comparing(Review::getCreatedAt).reversed());
                 break;
             case HIGHEST:
-                reviews.sort(Comparator.comparing(Review::getRating).reversed()); // Sort by highest rating
+                reviews.sort(Comparator.comparing(Review::getRating).reversed());
                 break;
             case LOWEST:
-                reviews.sort(Comparator.comparing(Review::getRating)); // Sort by lowest rating
+                reviews.sort(Comparator.comparing(Review::getRating));
                 break;
         }
 
-        // Fetch user's votes for these reviews
-        List<Vote> userVotes = voteRepository.findByUserIdAndReview_ReviewIdIn(userId,
-                reviews.stream().map(Review::getReviewId).collect(Collectors.toList()));
-        Map<Long, VoteType> userVoteMap = userVotes.stream()
-                .collect(Collectors.toMap(v -> v.getReview().getReviewId(), Vote::getType));
+        // Fetch user's votes only if userId is not null
+        Map<Long, VoteType> userVoteMap;
+        if (userId != null) {
+            List<Vote> userVotes = voteRepository.findByUserIdAndReview_ReviewIdIn(userId,
+                    reviews.stream().map(Review::getReviewId).collect(Collectors.toList()));
+            userVoteMap = userVotes.stream()
+                    .collect(Collectors.toMap(v -> v.getReview().getReviewId(), Vote::getType));
+        } else {
+            userVoteMap = new HashMap<>();
+        }
 
-        // Identify user's own review
-        Review userReview = reviews.stream()
+        // Identify user's own review only if userId is not null
+        Review userReview = (userId != null)
+                ? reviews.stream()
                 .filter(review -> review.getUser().getId() == userId)
                 .findFirst()
-                .orElse(null);
+                .orElse(null)
+                : null;
 
         // Map user review if it exists
         ReviewResponseDTO userReviewDTO = (userReview != null) ? mapToReviewDTO(userReview, userVoteMap) : null;
@@ -110,8 +116,8 @@ public class ReviewService {
         int end = Math.min(start + reviewPerPage, otherReviews.size());
         otherReviews = otherReviews.subList(start, end);
 
+        // Construct response map
         Map<String, Object> map = new HashMap<>(Map.of("otherReviews", otherReviews));
-
         if (userReviewDTO != null) {
             map.put("userReview", userReviewDTO);
         }

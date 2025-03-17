@@ -37,7 +37,7 @@ public class ReviewController {
         try {
             userId = AuthUtil.getAuthenticatedUserId();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            userId = null;
         }
 
         return ResponseEntity.ok(reviewService.findCourtReviews(courtId, userId, page, reviewsPerPage, sortMethod));

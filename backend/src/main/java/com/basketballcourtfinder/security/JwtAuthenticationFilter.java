@@ -18,8 +18,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -31,7 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       @NonNull HttpServletResponse response,
       @NonNull FilterChain filterChain) throws ServletException, IOException {
     String path = request.getRequestURI();
-    if (path.equals("/api/users/login") || path.equals("/api/users/sign-up")) {
+    List<String> list = Arrays.asList("/api/users/login", "/api/users/sign-up", "/api/courts/around");
+    if (list.contains(path)) {
       filterChain.doFilter(request, response);
       return;
     }
