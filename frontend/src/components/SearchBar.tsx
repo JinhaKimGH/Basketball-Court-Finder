@@ -128,7 +128,7 @@ export default function SearchBar(
           <InputGroup
             startElement={
               <Image
-                src="/assets/basket.png"
+                src="./assets/basket.png"
                 alt="Basket Icon"
                 boxSize="24px"
                 objectFit="cover"
