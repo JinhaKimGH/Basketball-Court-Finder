@@ -1,0 +1,36 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Trigger deployment on push to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16" # Specify the Node.js version
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Set up environment variables
+        run: |
+          echo "VITE_APP_API_BASE_URL=${{ secrets.VITE_APP_API_BASE_URL }}" >> frontend/.env
+
+      - name: Build and Deploy to GitHub Pages
+        run: |
+          cd frontend
+          npm run build
+          npm run deploy
+
+      - name: Clean up
+        run: rm frontend/.env
