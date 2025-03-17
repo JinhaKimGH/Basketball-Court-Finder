@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -22,8 +22,8 @@ jobs:
           VITE_APP_API_BASE_URL: ${{ secrets.VITE_APP_API_BASE_URL }}
 
       - name: Deploy
-        uses: JinhaKimGH/github-pages-deploy-action@v3 # Deploy action
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Authentication token to push to GitHub
-          BRANCH: gh-pages # Target branch for GitHub Pages
-          FOLDER: frontend/build # Folder to deploy (make sure this is the correct folder)
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: frontend/dist
