@@ -24,6 +24,6 @@ jobs:
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Authentication token to push to GitHub
-          BRANCH: gh-pages # Target branch for GitHub Pages
-          FOLDER: frontend/build # Folder to deploy (make sure this is the correct folder)
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: frontend/dist
