@@ -22,7 +22,7 @@ jobs:
           VITE_APP_API_BASE_URL: ${{ secrets.VITE_APP_API_BASE_URL }}
 
       - name: Deploy
-        uses: JinhaKimGH/github-pages-deploy-action@v3 # Deploy action
+        uses: JamesIves/github-pages-deploy-action@v3 # Deploy action
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Authentication token to push to GitHub
           BRANCH: gh-pages # Target branch for GitHub Pages
