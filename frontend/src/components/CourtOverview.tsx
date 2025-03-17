@@ -1,6 +1,6 @@
 import { BasketballCourt } from "@/interfaces";
 import { Box, Collapsible, Flex, Heading, Link, List, Text } from "@chakra-ui/react";
-import React from "react";
+import React, { useContext } from "react";
 import { LuChevronDown, LuClock, LuExternalLink, LuLink, LuMapPin, LuPencil, LuPhone } from "react-icons/lu";
 import { GiBasketballBasket, GiRopeCoil } from "react-icons/gi";
 import { PiCourtBasketballFill, PiSparkleLight } from "react-icons/pi";
@@ -11,6 +11,8 @@ import { MdOutlineDriveFileRenameOutline } from "react-icons/md";
 import { DialogContent, DialogRoot, DialogTrigger } from "@/components/ui/dialog";
 import CourtEditForm, { FieldType } from "./CourtEditForm";
 import { displayLink } from "@/utils";
+import { AuthContext } from "@/context/AuthContext";
+import { toaster } from "./ui/toaster";
 
 export default function CourtOverview(
   props: {
@@ -19,6 +21,13 @@ export default function CourtOverview(
     setCourts: React.Dispatch<React.SetStateAction<BasketballCourt[]>>
   }
 ) {
+  // User Authentication Information
+  const authContext = useContext(AuthContext);
+  if (!authContext) {
+    throw new Error("AuthContext is null");
+  }
+  const isLoggedIn = authContext.isLoggedIn;
+  
   const { court, setCourts, index } = props;
 
   const hasFetched = React.useRef(false); // Prevent duplicate fetches
@@ -93,7 +102,16 @@ export default function CourtOverview(
           padding="2"
           _hover={{ backgroundColor: "gray.100", color: "orange.500" }}
           borderRadius={"10px"}
-          onClick={() => handleEditClick(field)}
+          onClick={() => {
+            if (!isLoggedIn) {
+              toaster.create({
+                title: `Must be logged in to edit court information!`,
+                type: "error",
+              });
+              return;
+            }
+            handleEditClick(field)
+          }}
           alignItems={"center"}
         >
           <LuPencil/>

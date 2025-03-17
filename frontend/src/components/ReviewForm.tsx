@@ -50,6 +50,9 @@ export default function ReviewForm(
           if (response.status == 201) {
             setIsLoading(false);
             props.setOpen(false);
+          } else if (response.status == 403) {
+            setErrorMessage("You must log in to leave a review.")
+            setIsLoading(false);
           } else {
             response.text().then(text => {
               setIsLoading(false);

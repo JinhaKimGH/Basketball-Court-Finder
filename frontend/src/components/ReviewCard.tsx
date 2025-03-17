@@ -2,7 +2,9 @@ import { Review } from "@/interfaces";
 import { pickPalette, timeAgo } from "@/utils";
 import { Box, Flex, Text, Avatar, RatingGroup, Icon } from "@chakra-ui/react";
 import { LuChevronDown, LuChevronUp } from "react-icons/lu";
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { AuthContext } from "@/context/AuthContext";
+import { toaster } from "./ui/toaster";
 
 export default function ReviewCard(
   props: {
@@ -16,6 +18,13 @@ export default function ReviewCard(
     downvoted: review.downvoted,
     totalVotes: review.totalVotes
   });
+
+  // User Authentication Information
+  const authContext = useContext(AuthContext);
+  if (!authContext) {
+    throw new Error("AuthContext is null");
+  }
+  const isLoggedIn = authContext.isLoggedIn;
 
   const handleVote = async (targetVote: 'up' | 'down' | 'remove') => {
     // Optimistically update local state
@@ -142,6 +151,13 @@ export default function ReviewCard(
           }}
           onClick={() => {
             if (isUserReview) return;
+            if (!isLoggedIn) {
+              toaster.create({
+                title: `Must be logged in to vote on a review!`,
+                type: "error",
+              });
+              return;
+            }
             handleVote(localVoteState.upvoted ? 'remove' : 'up');
           }}
         />
@@ -157,6 +173,13 @@ export default function ReviewCard(
           }}
           onClick={() => {
             if (isUserReview) return;
+            if (!isLoggedIn) {
+              toaster.create({
+                title: `Must be logged in to vote on a review!`,
+                type: "error",
+              });
+              return;
+            }
             handleVote(localVoteState.downvoted ? 'remove' : 'down');
           }}
         />

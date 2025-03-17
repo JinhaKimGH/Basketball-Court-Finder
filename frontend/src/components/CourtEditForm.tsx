@@ -96,9 +96,15 @@ export default function CourtEditForm(
             setShowSuccess(false);
           }, 3000);
         } else {
-          const text = await response.text();
-          setErrorMessage(text || "Something went wrong");
-          throw new Error(`HTTP error! status: ${response.status}`);
+          
+          if (response.status === 403) {
+            setErrorMessage("You may only update information when logged in.")
+          } else {
+            const text = await response.text();
+            setErrorMessage(text || "Something went wrong");
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
         }
       } catch (e) {
         console.error("Error updating basketball court information: ", e); // TODO: New Relic Logging

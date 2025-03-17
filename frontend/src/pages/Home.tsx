@@ -5,6 +5,7 @@ import { BasketballCourt } from "@/interfaces";
 import { LatLngTuple } from "leaflet";
 import React from "react";
 import {AnimatePresence, motion} from "framer-motion";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function Home() {
 
@@ -18,28 +19,7 @@ export default function Home() {
   const [mapCenter, setMapCenter] = React.useState<LatLngTuple>([43.65, -79.3832]);
 
   // Basketball Courts
-  const [courts, setCourts] = React.useState<Array<BasketballCourt>>([{
-    id: 12,
-    lat: 43.65,
-    lon: -79.3832,
-    name: "Test Court",
-    hoops: 2,
-    surface: "Pavement",
-    address: {
-      house_number: "123",
-      street: "street",
-      city: "Toronto",
-      state: "Ontario",
-      country: "Canada",
-      postcode: "ZZZ 123",
-      incomplete: false,
-    },
-    amenity: "Park",
-    website: "www.google.com",
-    opening_hours: "Mo-Fr 07:30-22:00; Sa 09:00-23:00; Su 10:00-18:00",
-    phone: "647 - 999 - 9999",
-    indoor: false
-  }]);
+  const [courts, setCourts] = React.useState<Array<BasketballCourt>>([]);
 
   // Fetch courts when the map center updates
   React.useEffect(() => {
@@ -71,6 +51,7 @@ export default function Home() {
 
   return (
     <>
+      <Toaster/>
       <SearchBar setCoordinates={setCoordinates} currentMapCenter={mapCenter}/>
       <Map 
         coordinates={coordinates} 
