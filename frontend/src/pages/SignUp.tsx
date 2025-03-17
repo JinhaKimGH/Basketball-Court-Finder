@@ -222,7 +222,7 @@ export default function SignUp() : JSX.Element{
         >
           {signedUp ? 
             <Link 
-              href="/log-in" 
+              href="/Basketball-Court-Finder/log-in" 
               variant="underline" 
               _focus={{ 
                 boxShadow: 'none',

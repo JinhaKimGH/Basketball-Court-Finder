@@ -186,7 +186,7 @@ export default function Login() : JSX.Element{
         gap="6"
       >
         <Link 
-          href="/sign-up" 
+          href="/Basketball-Court-Finder/sign-up" 
           variant="underline" 
           border="none"
           _focus={{ 
