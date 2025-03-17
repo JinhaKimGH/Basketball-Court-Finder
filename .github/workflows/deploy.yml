@@ -26,6 +26,11 @@ jobs:
         run: |
           echo "VITE_APP_API_BASE_URL=${{ secrets.VITE_APP_API_BASE_URL }}" >> frontend/.env
 
+      - name: Configure Git user for deployment
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
       - name: Build and Deploy to GitHub Pages
         run: |
           cd frontend
