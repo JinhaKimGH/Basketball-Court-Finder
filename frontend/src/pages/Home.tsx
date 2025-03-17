@@ -6,6 +6,7 @@ import { LatLngTuple } from "leaflet";
 import React from "react";
 import {AnimatePresence, motion} from "framer-motion";
 import { Toaster } from "@/components/ui/toaster";
+import { Center, Spinner } from "@chakra-ui/react";
 
 export default function Home() {
 
@@ -13,6 +14,8 @@ export default function Home() {
 
   // The selected court
   const [selected, setSelected] = React.useState(-1);
+
+  const [isLoading, setIsLoading] = React.useState(false);
 
   // Coordinates that the map is centered on
   const [coordinates, setCoordinates] = React.useState<LatLngTuple>([43.65, -79.3832]);
@@ -26,9 +29,10 @@ export default function Home() {
     const params = new URLSearchParams({
       latitude: coordinates[0].toString(),
       longitude: coordinates[1].toString(),
-      range: '2000', // TODO: Set as constant for now, update later?
+      range: '2000',
     });
 
+    setIsLoading(true);
     fetch(`${baseApiUrl}/api/courts/around?${params.toString()}`, {
       method: 'GET',
       credentials: 'include',
@@ -41,7 +45,8 @@ export default function Home() {
         }
       })
       .then((data) => setCourts(data))
-      .catch((error) => console.error(error.message)); // TODO: update later with logging
+      .catch((error) => console.error(error.message))
+      .finally(() => setIsLoading(false)); // TODO: update later with logging
 
   }, [baseApiUrl, coordinates])
 
@@ -60,6 +65,11 @@ export default function Home() {
         selected={selected}
         onCenterChange={(center) => setMapCenter(center)}
       />
+      { isLoading &&
+        <Center position="absolute" top="0" left="0" width="100%" height="100%" zIndex={200}>
+          <Spinner color="orange.500" size="xl" borderWidth="4px"/>
+        </Center>
+      }
       <AnimatePresence>
         {(0 <= selected && selected < courts.length) &&
           <motion.div
