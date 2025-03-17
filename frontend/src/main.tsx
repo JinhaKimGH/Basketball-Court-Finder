@@ -1,4 +1,3 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
@@ -14,7 +13,7 @@ const config = {
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <BrowserRouter>
+  <BrowserRouter basename="/Basketball-Court-Finder">
     <ChakraProvider value={config}>
       <AuthProvider>
         <App />
