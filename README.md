@@ -5,6 +5,7 @@ This app finds basketball courts around a given location, and allows users to le
 This app gets basketball courts, its data, and creates the map using the OpenStreetMap (OSM) API, and geocodes and reverse geocodes using the Nominatim API.
 
 ## 🔗 Website Link
+❌ This website is down for the time being.
 
 You can access this app [here](https://jinhakimgh.github.io/Basketball-Court-Finder)!
 
